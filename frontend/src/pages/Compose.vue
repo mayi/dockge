@@ -56,6 +56,10 @@
                         </button>
                     </div>
 
+                    <button v-if="!isAdd && endpoint === ''" class="btn btn-outline-secondary" :disabled="processing" @click="backupStack">
+                        <font-awesome-icon icon="file" class="me-1" /> <span class="d-none d-xl-inline">{{ $t("backupStack") }}</span>
+                    </button>
+
                 </div>
             </div>
 
@@ -835,6 +839,73 @@ export default {
 
         stackNameToLowercase() {
             this.stack.name = this.stack?.name?.toLowerCase();
+        },
+
+        async backupStack() {
+            this.processing = true;
+
+            try {
+                const token = this.$root.storage().token;
+                const headers = {};
+                const env = process.env.NODE_ENV || "production";
+                let baseURL = "";
+
+                if (env === "development" || localStorage.dev === "dev") {
+                    baseURL = `${location.protocol}//${location.hostname}:5001`;
+                }
+
+                if (token && token !== "autoLogin") {
+                    headers.Authorization = `Bearer ${token}`;
+                }
+
+                const response = await fetch(`${baseURL}/api/stacks/${encodeURIComponent(this.stack.name)}/backup`, {
+                    method: "GET",
+                    headers,
+                });
+
+                if (!response.ok) {
+                const contentType = response.headers.get("content-type") || "";
+                if (contentType.includes("text/html")) {
+                    throw new Error("Backup request returned an HTML page instead of archive. Please check backend API endpoint/proxy configuration.");
+                }
+
+                    let msg = "Failed to backup stack";
+                    try {
+                        const res = await response.json();
+                        if (res && res.msg) {
+                            msg = res.msg;
+                        }
+                    } catch (_error) {
+                        // ignore json parsing errors
+                    }
+                    throw new Error(msg);
+                }
+
+                const blob = await response.blob();
+
+                const url = window.URL.createObjectURL(blob);
+                const contentDisposition = response.headers.get("content-disposition") || "";
+                const matched = contentDisposition.match(/filename="([^"]+)"/i);
+                const fileName = matched?.[1] || `${this.stack.name}-backup.tar.gz`;
+
+                const link = document.createElement("a");
+                link.href = url;
+                link.download = fileName;
+                document.body.appendChild(link);
+                link.click();
+                link.remove();
+                setTimeout(() => {
+                    window.URL.revokeObjectURL(url);
+                }, 1000);
+            } catch (error) {
+                if (error instanceof Error) {
+                    this.$root.toastError(error.message);
+                } else {
+                    this.$root.toastError("Failed to backup stack");
+                }
+            } finally {
+                this.processing = false;
+            }
         },
 
     }
