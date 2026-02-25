@@ -9,10 +9,13 @@
 
                 <div class="placeholder"></div>
                 <div class="search-wrapper">
-                    <a v-if="searchText == ''" class="search-icon">
+                    <a v-if="!$root.stackListRefreshing && searchText == ''" class="search-icon">
                         <font-awesome-icon icon="search" />
                     </a>
-                    <a v-if="searchText != ''" class="search-icon" style="cursor: pointer" @click="clearSearchText">
+                    <a v-if="$root.stackListRefreshing" class="search-icon refreshing-icon">
+                        <font-awesome-icon icon="arrows-rotate" spin />
+                    </a>
+                    <a v-if="!$root.stackListRefreshing && searchText != ''" class="search-icon" style="cursor: pointer" @click="clearSearchText">
                         <font-awesome-icon icon="times" />
                     </a>
                     <form>
@@ -42,7 +45,7 @@
                 </span>
             </div>
         </div>
-        <div ref="stackList" class="stack-list" :class="{ scrollbar: scrollbar }" :style="stackListStyle">
+        <div ref="stackList" class="stack-list" :class="{ scrollbar: scrollbar, refreshing: $root.stackListRefreshing }" :style="stackListStyle">
             <div v-if="Object.keys(sortedStackList).length === 0" class="text-center mt-3">
                 <router-link to="/compose">{{ $t("addFirstStackMsg") }}</router-link>
             </div>
@@ -413,6 +416,28 @@ export default {
         &:hover {
             opacity: 0.5;
         }
+    }
+
+    // Refreshing icon animation
+    &.refreshing-icon {
+        color: $primary;
+        animation: pulse 1.5s ease-in-out infinite;
+    }
+}
+
+@keyframes pulse {
+    0%, 100% {
+        opacity: 1;
+    }
+    50% {
+        opacity: 0.6;
+    }
+}
+
+.stack-list {
+    &.refreshing {
+        opacity: 0.7;
+        transition: opacity 0.3s ease;
     }
 }
 

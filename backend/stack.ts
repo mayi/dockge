@@ -117,6 +117,11 @@ export class Stack {
             throw new ValidationError("Stack name can only contain [a-z][0-9] _ - only");
         }
 
+        // Limit stack name length to prevent filesystem issues
+        if (this.name.length > 100) {
+            throw new ValidationError("Stack name must be 100 characters or fewer");
+        }
+
         // Check YAML format
         yaml.parse(this.composeYAML);
 
@@ -375,7 +380,17 @@ export class Stack {
     }
 
     static async getStack(server: DockgeServer, stackName: string, skipFSOperations = false) : Promise<Stack> {
+        // Prevent path traversal attacks
+        if (!stackName || stackName.includes("..") || stackName.includes("/") || stackName.includes("\\")) {
+            throw new ValidationError("Invalid stack name");
+        }
+
         let dir = path.join(server.stacksDir, stackName);
+
+        // Verify the resolved path is still within stacksDir
+        if (!path.resolve(dir).startsWith(path.resolve(server.stacksDir))) {
+            throw new ValidationError("Invalid stack name");
+        }
 
         if (!skipFSOperations) {
             if (!await fileExists(dir) || !(await fsAsync.stat(dir)).isDirectory()) {

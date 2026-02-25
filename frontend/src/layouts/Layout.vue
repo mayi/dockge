@@ -10,9 +10,9 @@
         </div>
 
         <!-- Desktop header -->
-        <header v-if="! $root.isMobile" class="d-flex flex-wrap justify-content-center py-3 mb-3 border-bottom">
+        <header v-if="! $root.isMobile" class="d-flex flex-wrap align-items-center justify-content-center py-3 mb-3 border-bottom">
             <router-link to="/" class="d-flex align-items-center mb-3 mb-md-0 me-md-auto text-dark text-decoration-none">
-                <object class="bi me-2 ms-4" width="40" height="40" data="/icon.svg" />
+                <object class="bi me-2 ms-4 logo-icon" width="36" height="36" data="/icon.svg" />
                 <span class="fs-4 title">Dockge</span>
             </router-link>
 
@@ -146,6 +146,7 @@ export default {
 
     methods: {
         scanFolder() {
+            this.$root.stackListRefreshing = true;
             this.$root.emitAgent(ALL_ENDPOINTS, "requestStackList", (res) => {
                 this.$root.toastRes(res);
             });
@@ -205,6 +206,14 @@ main {
 
 .title {
     font-weight: bold;
+    background: $primary-gradient;
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+}
+
+.logo-icon {
+    filter: drop-shadow(0 2px 6px rgba($primary, 0.25));
 }
 
 .nav {

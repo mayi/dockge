@@ -1,10 +1,15 @@
 <template>
     <div class="shadow-box big-padding mb-3 container">
         <div class="row">
-            <div class="col-7">
+            <div class="col-12 col-sm-7">
                 <h4>{{ name }}</h4>
                 <div class="image mb-2">
-                    <span class="me-1">{{ imageName }}:</span><span class="tag">{{ imageTag }}</span>
+                    <template v-if="splitImageTag">
+                        <span class="me-1">{{ imageName }}</span><span class="badge bg-primary tag-badge">{{ imageTag }}</span>
+                    </template>
+                    <template v-else>
+                        <span class="me-1">{{ imageName }}:</span><span class="tag">{{ imageTag }}</span>
+                    </template>
                 </div>
                 <div v-if="!isEditMode">
                     <span class="badge me-1" :class="bgStyle">{{ status }}</span>
@@ -14,7 +19,7 @@
                     </a>
                 </div>
             </div>
-            <div class="col-5">
+            <div class="col-12 col-sm-5 mt-2 mt-sm-0">
                 <div class="function">
                     <router-link v-if="!isEditMode" class="btn btn-normal" :to="terminalRouteLink" disabled="">
                         <font-awesome-icon icon="terminal" />
@@ -43,12 +48,36 @@
                     <label class="form-label">
                         {{ $t("dockerImage") }}
                     </label>
-                    <div class="input-group mb-3">
+
+                    <!-- Combined mode: single input -->
+                    <div v-if="!splitImageTag" class="input-group mb-3">
                         <input
                             v-model="service.image"
                             class="form-control"
                             list="image-datalist"
                         />
+                    </div>
+
+                    <!-- Split mode: separate name and tag inputs -->
+                    <div v-if="splitImageTag" class="row mb-3">
+                        <div class="col-8">
+                            <label class="form-label small text-muted">{{ $t("imageName") }}</label>
+                            <input
+                                :value="editImageName"
+                                class="form-control"
+                                @input="updateImageName($event.target.value)"
+                                list="image-datalist"
+                            />
+                        </div>
+                        <div class="col-4">
+                            <label class="form-label small text-muted">{{ $t("imageTag") }}</label>
+                            <input
+                                :value="editImageTag"
+                                class="form-control"
+                                placeholder="latest"
+                                @input="updateImageTag($event.target.value)"
+                            />
+                        </div>
                     </div>
 
                     <!-- TODO: Search online: https://hub.docker.com/api/content/v1/products/search?q=louislam%2Fuptime&source=community&page=1&page_size=4 -->
@@ -174,6 +203,25 @@ export default defineComponent({
     },
     computed: {
 
+        splitImageTag() {
+            return localStorage.getItem("imageTagSplit") === "true";
+        },
+
+        editImageName() {
+            if (this.service.image) {
+                return this.service.image.split(":")[0];
+            }
+            return "";
+        },
+
+        editImageTag() {
+            if (this.service.image) {
+                const parts = this.service.image.split(":");
+                return parts.length > 1 ? parts.slice(1).join(":") : "";
+            }
+            return "";
+        },
+
         networkList() {
             let list = [];
             for (const networkName in this.jsonObject.networks) {
@@ -285,6 +333,17 @@ export default defineComponent({
                 return parseDockerPort(port, hostname);
             }
         },
+
+        updateImageName(name) {
+            const tag = this.editImageTag;
+            this.service.image = tag ? `${name}:${tag}` : name;
+        },
+
+        updateImageTag(tag) {
+            const name = this.editImageName;
+            this.service.image = tag ? `${name}:${tag}` : name;
+        },
+
         remove() {
             delete this.jsonObject.services[this.name];
         },
@@ -299,8 +358,14 @@ export default defineComponent({
     .image {
         font-size: 0.8rem;
         color: #6c757d;
+        word-break: break-all;
         .tag {
             color: #33383b;
+        }
+        .tag-badge {
+            font-size: 0.75rem;
+            font-weight: 500;
+            vertical-align: middle;
         }
     }
 
@@ -311,6 +376,12 @@ export default defineComponent({
         width: 100%;
         align-items: center;
         justify-content: end;
+    }
+}
+
+@media (max-width: 575px) {
+    .container .function {
+        justify-content: start;
     }
 }
 </style>

@@ -8,10 +8,13 @@
 
 h1 {
     font-size: 32px;
+    font-weight: 700;
+    letter-spacing: -0.3px;
 }
 
 h2 {
     font-size: 26px;
+    font-weight: 600;
 }
 
 textarea.form-control {
@@ -100,12 +103,17 @@ optgroup {
 }
 
 .shadow-box {
-    box-shadow: 0 15px 70px rgba(0, 0, 0, 0.1);
+    box-shadow: 0 10px 40px rgba(0, 0, 0, 0.08);
     padding: 10px;
-    border-radius: 10px;
+    border-radius: 14px;
+    transition: box-shadow 0.2s ease;
 
     &.big-padding {
         padding: 20px;
+    }
+
+    &:hover {
+        box-shadow: 0 12px 48px rgba(0, 0, 0, 0.12);
     }
 }
 
@@ -121,11 +129,18 @@ optgroup {
 .btn-primary {
     color: white;
     background: $primary-gradient;
+    border: none;
+    transition: transform 0.15s ease, box-shadow 0.15s ease, background 0.2s ease;
 
     &:hover, &:active, &:focus, &.active {
         color: white;
         background: $primary-gradient-active;
         border-color: $highlight;
+        box-shadow: 0 4px 16px rgba($primary, 0.3);
+    }
+
+    &:active {
+        transform: scale(0.97);
     }
 
     .dark & {
@@ -244,11 +259,17 @@ optgroup {
 
     &::-webkit-scrollbar-thumb, ::-webkit-scrollbar-thumb {
         background: $dark-border-color;
+        border-radius: 20px;
     }
 
     .shadow-box {
         &:not(.alert) {
             background-color: $dark-bg;
+            border: 1px solid $dark-border-color;
+        }
+
+        &:hover:not(.alert) {
+            border-color: lighten($dark-border-color, 5%);
         }
     }
 
@@ -385,11 +406,11 @@ optgroup {
     .stack-list {
         .item {
             &:hover {
-                background-color: $dark-bg2;
+                background-color: $dark-hover-bg;
             }
 
             &.active {
-                background-color: $dark-bg2;
+                background-color: rgba($primary, 0.08);
             }
         }
     }
@@ -691,6 +712,90 @@ code {
 }
 .cm-focused {
     outline: none !important;
+}
+
+// ========================================
+// Responsive Layout Styles
+// ========================================
+
+// General mobile adjustments
+@media (max-width: 767px) {
+    h1 {
+        font-size: 24px;
+    }
+
+    h2 {
+        font-size: 20px;
+    }
+
+    h4 {
+        font-size: 16px;
+    }
+
+    .shadow-box {
+        padding: 8px;
+        border-radius: 10px;
+
+        &.big-padding {
+            padding: 14px;
+        }
+    }
+
+    .btn {
+        padding-left: 14px;
+        padding-right: 14px;
+        font-size: 14px;
+    }
+
+    .container-fluid {
+        width: 100% !important;
+        padding-left: 10px;
+        padding-right: 10px;
+    }
+
+    // Make form controls more touch-friendly
+    .form-control, .form-select {
+        font-size: 16px; // Prevents iOS zoom on focus
+        padding: 8px 12px;
+    }
+
+    // Stack modal buttons vertically on very small screens
+    .modal-footer {
+        flex-direction: column-reverse;
+        gap: 8px;
+
+        .btn {
+            width: 100%;
+            margin: 0 !important;
+        }
+    }
+}
+
+// Small mobile
+@media (max-width: 400px) {
+    h1 {
+        font-size: 20px;
+    }
+
+    .btn {
+        padding-left: 10px;
+        padding-right: 10px;
+        font-size: 13px;
+    }
+}
+
+// Tablet adjustments
+@media (min-width: 768px) and (max-width: 1023px) {
+    .container-fluid {
+        width: 100% !important;
+    }
+}
+
+// Safe area padding for notched devices
+@supports (padding: env(safe-area-inset-bottom)) {
+    .mobile main {
+        padding-bottom: env(safe-area-inset-bottom);
+    }
 }
 
 // Localization

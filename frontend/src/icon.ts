@@ -53,7 +53,7 @@ import {
     faCertificate,
     faTerminal, faWarehouse, faHome, faRocket,
     faRotate,
-    faCloudArrowDown, faArrowsRotate,
+    faCloudArrowDown, faArrowsRotate, faAnglesLeft, faAnglesRight,
 } from "@fortawesome/free-solid-svg-icons";
 
 library.add(
@@ -109,6 +109,8 @@ library.add(
     faRotate,
     faCloudArrowDown,
     faArrowsRotate,
+    faAnglesLeft,
+    faAnglesRight,
 );
 
 export { FontAwesomeIcon };

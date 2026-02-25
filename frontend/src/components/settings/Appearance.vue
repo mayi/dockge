@@ -63,12 +63,48 @@
                 </div>
             </div>
         </div>
+
+        <!-- Image Tag Split Setting -->
+        <div class="my-4">
+            <label class="form-label">{{ $t("dockerImage") }}</label>
+            <div class="form-check form-switch">
+                <input
+                    id="imageTagSplit"
+                    v-model="imageTagSplit"
+                    class="form-check-input"
+                    type="checkbox"
+                />
+                <label class="form-check-label" for="imageTagSplit">
+                    {{ $t("imageVersionSplit") }}
+                </label>
+            </div>
+            <div class="form-text">
+                <div class="image-split-preview mt-2">
+                    <div v-if="!imageTagSplit" class="preview-combined">
+                        <span class="badge bg-secondary">nginx:latest</span>
+                    </div>
+                    <div v-else class="preview-split">
+                        <span class="badge bg-secondary me-1">nginx</span>
+                        <span class="badge bg-primary">latest</span>
+                    </div>
+                </div>
+            </div>
+        </div>
     </div>
 </template>
 
 <script>
 export default {
-
+    data() {
+        return {
+            imageTagSplit: localStorage.getItem("imageTagSplit") === "true",
+        };
+    },
+    watch: {
+        imageTagSplit(val) {
+            localStorage.setItem("imageTagSplit", val ? "true" : "false");
+        },
+    },
 };
 </script>
 

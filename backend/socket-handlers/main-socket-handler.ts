@@ -136,7 +136,7 @@ export class MainSocketHandler extends SocketHandler {
             }
 
             // Login Rate Limit
-            if (!await loginRateLimiter.pass(callback)) {
+            if (!await loginRateLimiter.pass(clientIP, callback)) {
                 log.info("auth", `Too many failed requests for user ${data.username}. IP=${clientIP}`);
                 return;
             }

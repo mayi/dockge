@@ -135,5 +135,15 @@
     "ConsoleNotEnabledMSG1": "Console is a powerful tool that allows you to execute any commands such as <code>docker</code>, <code>rm</code> within the Dockge's container in this Web UI.",
     "ConsoleNotEnabledMSG2": "It might be dangerous since this Dockge container is connecting to the host's Docker daemon. Also Dockge could be possibly taken down by commands like <code>rm -rf</code>" ,
     "ConsoleNotEnabledMSG3": "If you understand the risk, you can enable it by setting <code>DOCKGE_ENABLE_CONSOLE=true</code> in the environment variables.",
-    "confirmLeaveStack": "You are currently editing a stack. Are you sure you want to leave?"
+    "confirmLeaveStack": "You are currently editing a stack. Are you sure you want to leave?",
+    "confirmRestartMsg": "Are you sure you want to restart this stack? Running containers will be restarted.",
+    "confirmStopMsg": "Are you sure you want to stop this stack? All containers in this stack will be stopped.",
+    "confirmUpdateMsg": "Are you sure you want to update this stack? This will pull the latest images and recreate containers.",
+    "confirmDownMsg": "Are you sure you want to stop and deactivate this stack? All containers will be stopped and removed.",
+    "Confirm": "Confirm",
+    "imageVersionSplit": "Separate Image and Tag",
+    "imageName": "Image Name",
+    "imageTag": "Tag / Version",
+    "collapseSidebar": "Collapse Sidebar",
+    "expandSidebar": "Expand Sidebar"
 }

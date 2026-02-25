@@ -45,6 +45,9 @@ export default defineComponent({
             agentList: {
 
             },
+
+            // Stack list refreshing state
+            stackListRefreshing: false,
         };
     },
     computed: {
@@ -257,6 +260,8 @@ export default defineComponent({
                         this.allAgentStackList[res.endpoint].stackList = res.stackList;
                     }
                 }
+                // Turn off refreshing state after receiving stack list
+                this.stackListRefreshing = false;
             });
 
             socket.on("stackStatusList", (res) => {

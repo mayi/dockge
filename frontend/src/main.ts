@@ -54,10 +54,19 @@ function rootApp() {
                 loggedIn: false,
                 allowLoginDialog: false,
                 username: null,
+                windowWidth: window.innerWidth,
             };
         },
         computed: {
-
+            isMobile() : boolean {
+                return this.windowWidth < 768;
+            },
+        },
+        mounted() {
+            window.addEventListener("resize", this.onResize);
+        },
+        beforeUnmount() {
+            window.removeEventListener("resize", this.onResize);
         },
         methods: {
 
@@ -98,6 +107,10 @@ function rootApp() {
              */
             toastError(msg : string) {
                 toast.error(this.$t(msg));
+            },
+
+            onResize() {
+                this.windowWidth = window.innerWidth;
             },
         },
         render: () => h(App),

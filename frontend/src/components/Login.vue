@@ -2,7 +2,11 @@
     <div class="form-container">
         <div class="form">
             <form @submit.prevent="submit">
-                <h1 class="h3 mb-3 fw-normal" />
+                <div class="login-logo mb-4">
+                    <object width="64" height="64" data="/icon.svg" />
+                    <h1 class="h3 mt-2 fw-bold">Dockge</h1>
+                    <p class="text-muted login-subtitle">{{ $t("Login") }}</p>
+                </div>
 
                 <div v-if="!tokenRequired" class="form-floating">
                     <input id="floatingInput" v-model="username" type="text" class="form-control" placeholder="Username" autocomplete="username" required>
@@ -30,7 +34,8 @@
                         </label>
                     </div>
                 </div>
-                <button class="w-100 btn btn-primary" type="submit" :disabled="processing">
+                <button class="w-100 btn btn-primary btn-login" type="submit" :disabled="processing">
+                    <span v-if="processing" class="spinner-border spinner-border-sm me-1" role="status" aria-hidden="true"></span>
                     {{ $t("Login") }}
                 </button>
 
@@ -87,9 +92,13 @@ export default {
 </script>
 
 <style lang="scss" scoped>
+@import "../styles/vars.scss";
+
 .form-container {
     display: flex;
     align-items: center;
+    justify-content: center;
+    min-height: 80vh;
     padding-top: 40px;
     padding-bottom: 40px;
 }
@@ -101,14 +110,60 @@ export default {
 
     > .form-control {
         padding-left: 1.3rem;
+        border-radius: 12px;
+        height: 3.2rem;
+        transition: border-color 0.2s ease, box-shadow 0.2s ease;
+
+        &:focus {
+            border-color: $primary;
+            box-shadow: 0 0 0 3px rgba($primary, 0.15);
+        }
     }
 }
 
 .form {
     width: 100%;
-    max-width: 330px;
-    padding: 15px;
+    max-width: 380px;
+    padding: 30px;
     margin: auto;
     text-align: center;
+    background: rgba(255, 255, 255, 0.03);
+    border-radius: 20px;
+    backdrop-filter: blur(10px);
+
+    .dark & {
+        background: rgba(22, 27, 34, 0.6);
+        border: 1px solid $dark-border-color;
+    }
+}
+
+.login-logo {
+    object {
+        filter: drop-shadow(0 4px 12px rgba($primary, 0.3));
+    }
+
+    h1 {
+        background: $primary-gradient;
+        -webkit-background-clip: text;
+        -webkit-text-fill-color: transparent;
+        background-clip: text;
+    }
+}
+
+.login-subtitle {
+    font-size: 14px;
+    margin-bottom: 0;
+}
+
+.btn-login {
+    border-radius: 12px;
+    padding: 10px 20px;
+    font-weight: 600;
+    font-size: 15px;
+    transition: transform 0.15s ease, box-shadow 0.15s ease;
+
+    &:active {
+        transform: scale(0.98);
+    }
 }
 </style>

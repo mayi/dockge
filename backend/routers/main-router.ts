@@ -6,6 +6,16 @@ export class MainRouter extends Router {
     create(app: Express, server: DockgeServer): ExpressRouter {
         const router = express.Router();
 
+        // Security headers middleware
+        router.use((_req, res, next) => {
+            res.setHeader("X-Content-Type-Options", "nosniff");
+            res.setHeader("X-Frame-Options", "SAMEORIGIN");
+            res.setHeader("Referrer-Policy", "strict-origin-when-cross-origin");
+            res.setHeader("Permissions-Policy", "camera=(), microphone=(), geolocation=()");
+            res.removeHeader("X-Powered-By");
+            next();
+        });
+
         router.get("/", (req, res) => {
             res.send(server.indexHTML);
         });

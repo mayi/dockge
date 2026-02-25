@@ -7,21 +7,34 @@
 
             <div class="row first-row">
                 <!-- Left -->
-                <div class="col-md-7">
+                <div class="col-12 col-md-7">
                     <!-- Stats -->
-                    <div class="shadow-box big-padding text-center mb-4">
-                        <div class="row">
-                            <div class="col">
-                                <h3>{{ $t("active") }}</h3>
-                                <span class="num active">{{ activeNum }}</span>
+                    <div class="stats-grid mb-4">
+                        <div class="stat-card shadow-box">
+                            <div class="stat-icon active">
+                                <font-awesome-icon icon="check-circle" />
                             </div>
-                            <div class="col">
-                                <h3>{{ $t("exited") }}</h3>
-                                <span class="num exited">{{ exitedNum }}</span>
+                            <div class="stat-info">
+                                <span class="stat-num active">{{ activeNum }}</span>
+                                <span class="stat-label">{{ $t("active") }}</span>
                             </div>
-                            <div class="col">
-                                <h3>{{ $t("inactive") }}</h3>
-                                <span class="num inactive">{{ inactiveNum }}</span>
+                        </div>
+                        <div class="stat-card shadow-box">
+                            <div class="stat-icon exited">
+                                <font-awesome-icon icon="times-circle" />
+                            </div>
+                            <div class="stat-info">
+                                <span class="stat-num exited">{{ exitedNum }}</span>
+                                <span class="stat-label">{{ $t("exited") }}</span>
+                            </div>
+                        </div>
+                        <div class="stat-card shadow-box">
+                            <div class="stat-icon inactive">
+                                <font-awesome-icon icon="pause" />
+                            </div>
+                            <div class="stat-info">
+                                <span class="stat-num inactive">{{ inactiveNum }}</span>
+                                <span class="stat-label">{{ $t("inactive") }}</span>
                             </div>
                         </div>
                     </div>
@@ -35,7 +48,7 @@
                     <button class="btn-normal btn mb-4" @click="convertDockerRun">{{ $t("Convert to Compose") }}</button>
                 </div>
                 <!-- Right -->
-                <div class="col-md-5">
+                <div class="col-12 col-md-5 mt-3 mt-md-0">
                     <!-- Agent List -->
                     <div class="shadow-box big-padding">
                         <h4 class="mb-3">{{ $tc("dockgeAgent", 2) }} <span class="badge bg-warning" style="font-size: 12px;">beta</span></h4>
@@ -293,11 +306,59 @@ export default {
 <style lang="scss" scoped>
 @import "../styles/vars";
 
-.num {
-    font-size: 30px;
+.stats-grid {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 12px;
+}
 
-    font-weight: bold;
-    display: block;
+.stat-card {
+    display: flex;
+    align-items: center;
+    gap: 14px;
+    padding: 18px !important;
+    transition: transform 0.15s ease, box-shadow 0.2s ease;
+
+    &:hover {
+        transform: translateY(-2px);
+    }
+}
+
+.stat-icon {
+    width: 44px;
+    height: 44px;
+    border-radius: 12px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 18px;
+    flex-shrink: 0;
+
+    &.active {
+        background: rgba($primary, 0.12);
+        color: $primary;
+    }
+
+    &.exited {
+        background: rgba($danger, 0.12);
+        color: $danger;
+    }
+
+    &.inactive {
+        background: rgba(128, 128, 128, 0.12);
+        color: $dark-font-color3;
+    }
+}
+
+.stat-info {
+    display: flex;
+    flex-direction: column;
+}
+
+.stat-num {
+    font-size: 26px;
+    font-weight: 700;
+    line-height: 1.1;
 
     &.active {
         color: $primary;
@@ -306,6 +367,18 @@ export default {
     &.exited {
         color: $danger;
     }
+
+    &.inactive {
+        color: $dark-font-color3;
+    }
+}
+
+.stat-label {
+    font-size: 13px;
+    color: $dark-font-color3;
+    font-weight: 500;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
 }
 
 .shadow-box {
@@ -338,11 +411,55 @@ table {
 .remove-agent {
     cursor: pointer;
     color: rgba(255, 255, 255, 0.3);
+    transition: color 0.15s ease;
+
+    &:hover {
+        color: $danger;
+    }
 }
 
 .agent {
     a {
         text-decoration: none;
+    }
+}
+
+@media (max-width: 767px) {
+    .stats-grid {
+        grid-template-columns: repeat(3, 1fr);
+        gap: 8px;
+    }
+
+    .stat-card {
+        padding: 12px !important;
+        gap: 8px;
+    }
+
+    .stat-icon {
+        width: 36px;
+        height: 36px;
+        font-size: 14px;
+    }
+
+    .stat-num {
+        font-size: 20px;
+    }
+
+    .stat-label {
+        font-size: 11px;
+    }
+}
+
+@media (max-width: 400px) {
+    .stat-card {
+        flex-direction: column;
+        text-align: center;
+        gap: 4px;
+        padding: 10px !important;
+    }
+
+    .stat-info {
+        align-items: center;
     }
 }
 

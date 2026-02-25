@@ -128,5 +128,15 @@
     "Network name...": "网络名称...",
     "Select a network...": "选择网络...",
     "NoNetworksAvailable": "网络不可用.你需要在正确的方向先添加内部网络或者启用外部网络.",
-    "Downed": "已宕机"
+    "Downed": "已宕机",
+    "confirmRestartMsg": "确定要重启此堆栈吗？正在运行的容器将被重启。",
+    "confirmStopMsg": "确定要停止此堆栈吗？堆栈中所有容器将被停止。",
+    "confirmUpdateMsg": "确定要更新此堆栈吗？将拉取最新镜像并重新创建容器。",
+    "confirmDownMsg": "确定要停止并停用此堆栈吗？所有容器将被停止并移除。",
+    "Confirm": "确认",
+    "imageVersionSplit": "分离镜像和标签",
+    "imageName": "镜像名称",
+    "imageTag": "标签 / 版本",
+    "collapseSidebar": "折叠侧边栏",
+    "expandSidebar": "展开侧边栏"
 }

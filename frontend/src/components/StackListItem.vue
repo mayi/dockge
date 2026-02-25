@@ -138,17 +138,34 @@ export default {
     transition: all ease-in-out 0.15s;
     width: 100%;
     padding: 5px 8px;
+    border: 1px solid transparent;
+
     &.disabled {
         opacity: 0.3;
     }
     &:hover {
         background-color: $highlight-white;
+        border-color: rgba($primary, 0.15);
+        transform: translateX(2px);
     }
     &.active {
-        background-color: #cdf8f4;
+        background-color: rgba($primary, 0.08);
+        border-color: rgba($primary, 0.25);
+
+        .dark & {
+            background-color: rgba($primary, 0.08);
+            border-color: rgba($primary, 0.2);
+        }
     }
+
+    .dark &:hover {
+        background-color: $dark-hover-bg;
+        border-color: rgba($primary, 0.15);
+    }
+
     .title {
         margin-top: -4px;
+        font-weight: 500;
     }
     .endpoint {
         font-size: 12px;

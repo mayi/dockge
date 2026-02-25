@@ -9,8 +9,8 @@
                 </span>
             </h1>
 
-            <div v-if="stack.isManagedByDockge" class="mb-3">
-                <div class="btn-group me-2" role="group">
+            <div v-if="stack.isManagedByDockge" class="mb-3 action-bar">
+                <div class="btn-group-responsive" role="group">
                     <button v-if="isEditMode" class="btn btn-primary" :disabled="processing" @click="deployStack">
                         <font-awesome-icon icon="rocket" class="me-1" />
                         {{ $t("deployStack") }}
@@ -31,31 +31,31 @@
                         {{ $t("startStack") }}
                     </button>
 
-                    <button v-if="!isEditMode && active" class="btn btn-normal " :disabled="processing" @click="restartStack">
+                    <button v-if="!isEditMode && active" class="btn btn-normal " :disabled="processing" @click="confirmRestart">
                         <font-awesome-icon icon="rotate" class="me-1" />
                         {{ $t("restartStack") }}
                     </button>
 
-                    <button v-if="!isEditMode" class="btn btn-normal" :disabled="processing" @click="updateStack">
+                    <button v-if="!isEditMode" class="btn btn-normal" :disabled="processing" @click="confirmUpdate">
                         <font-awesome-icon icon="cloud-arrow-down" class="me-1" />
                         {{ $t("updateStack") }}
                     </button>
 
-                    <button v-if="!isEditMode && active" class="btn btn-normal" :disabled="processing" @click="stopStack">
+                    <button v-if="!isEditMode && active" class="btn btn-normal" :disabled="processing" @click="confirmStop">
                         <font-awesome-icon icon="stop" class="me-1" />
                         {{ $t("stopStack") }}
                     </button>
 
                     <BDropdown right text="" variant="normal">
-                        <BDropdownItem @click="downStack">
+                        <BDropdownItem @click="confirmDown">
                             <font-awesome-icon icon="stop" class="me-1" />
                             {{ $t("downStack") }}
                         </BDropdownItem>
                     </BDropdown>
                 </div>
 
-                <button v-if="isEditMode && !isAdd" class="btn btn-normal" :disabled="processing" @click="discardStack">{{ $t("discardStack") }}</button>
-                <button v-if="!isEditMode" class="btn btn-danger" :disabled="processing" @click="showDeleteDialog = !showDeleteDialog">
+                <button v-if="isEditMode && !isAdd" class="btn btn-normal ms-2" :disabled="processing" @click="discardStack">{{ $t("discardStack") }}</button>
+                <button v-if="!isEditMode" class="btn btn-danger ms-2" :disabled="processing" @click="showDeleteDialog = !showDeleteDialog">
                     <font-awesome-icon icon="trash" class="me-1" />
                     {{ $t("deleteStack") }}
                 </button>
@@ -82,7 +82,7 @@
             </transition>
 
             <div v-if="stack.isManagedByDockge" class="row">
-                <div class="col-lg-6">
+                <div class="col-12 col-lg-6">
                     <!-- General -->
                     <div v-if="isAdd">
                         <h4 class="mb-3">{{ $t("general") }}</h4>
@@ -163,7 +163,7 @@
                         ></Terminal>
                     </div>
                 </div>
-                <div class="col-lg-6">
+                <div class="col-12 col-lg-6">
                     <h4 class="mb-3">{{ stack.composeFileName }}</h4>
 
                     <!-- YAML editor -->
@@ -238,6 +238,26 @@
             <BModal v-model="showDeleteDialog" :cancelTitle="$t('cancel')" :okTitle="$t('deleteStack')" okVariant="danger" @ok="deleteDialog">
                 {{ $t("deleteStackMsg") }}
             </BModal>
+
+            <!-- Confirm Restart -->
+            <Confirm ref="confirmRestart" btnStyle="btn-warning" :yesText="$t('restartStack')" :noText="$t('cancel')" @yes="restartStack">
+                {{ $t("confirmRestartMsg") }}
+            </Confirm>
+
+            <!-- Confirm Stop -->
+            <Confirm ref="confirmStop" btnStyle="btn-warning" :yesText="$t('stopStack')" :noText="$t('cancel')" @yes="stopStack">
+                {{ $t("confirmStopMsg") }}
+            </Confirm>
+
+            <!-- Confirm Update -->
+            <Confirm ref="confirmUpdate" btnStyle="btn-primary" :yesText="$t('updateStack')" :noText="$t('cancel')" @yes="updateStack">
+                {{ $t("confirmUpdateMsg") }}
+            </Confirm>
+
+            <!-- Confirm Down -->
+            <Confirm ref="confirmDown" btnStyle="btn-warning" :yesText="$t('downStack')" :noText="$t('cancel')" @yes="downStack">
+                {{ $t("confirmDownMsg") }}
+            </Confirm>
         </div>
     </transition>
 </template>
@@ -262,6 +282,7 @@ import {
 } from "../../../common/util-common";
 import { BModal } from "bootstrap-vue-next";
 import NetworkInput from "../components/NetworkInput.vue";
+import Confirm from "../components/Confirm.vue";
 import dotenv from "dotenv";
 import { ref } from "vue";
 
@@ -285,6 +306,7 @@ export default {
         FontAwesomeIcon,
         CodeMirror,
         BModal,
+        Confirm,
     },
     beforeRouteUpdate(to, from, next) {
         this.exitConfirm(next);
@@ -676,6 +698,22 @@ export default {
             });
         },
 
+        confirmRestart() {
+            this.$refs.confirmRestart.show();
+        },
+
+        confirmStop() {
+            this.$refs.confirmStop.show();
+        },
+
+        confirmUpdate() {
+            this.$refs.confirmUpdate.show();
+        },
+
+        confirmDown() {
+            this.$refs.confirmDown.show();
+        },
+
         deleteDialog() {
             this.$root.emitAgent(this.endpoint, "deleteStack", this.stack.name, (res) => {
                 this.$root.toastRes(res);
@@ -796,5 +834,44 @@ export default {
 .agent-name {
     font-size: 13px;
     color: $dark-font-color3;
+}
+
+.action-bar {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: 8px;
+}
+
+.btn-group-responsive {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 6px;
+
+    .btn {
+        border-radius: 50rem !important;
+    }
+}
+
+@media (max-width: 767px) {
+    .btn-group-responsive {
+        width: 100%;
+
+        .btn {
+            flex: 1 1 auto;
+            font-size: 13px;
+            padding: 6px 12px;
+        }
+    }
+
+    .action-bar {
+        .btn {
+            font-size: 13px;
+        }
+    }
+
+    .editor-box {
+        font-size: 12px;
+    }
 }
 </style>
