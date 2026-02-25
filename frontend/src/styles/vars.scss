@@ -1,22 +1,22 @@
-$primary: #74c2ff;
-$danger: #dc3545;
-$warning: #f8a306;
-$success: #2ecc71;
-$maintenance: #1747f5;
-$link-color: #111;
-$border-radius: 50rem;
+$primary: #6750A4; // Material M3 Primary (Light)
+$danger: #B3261E; // M3 Error
+$warning: #F9A825; // M3 Yellow 800
+$success: #146C2E; // M3 Green
+$maintenance: #6750A4;
+$link-color: #1D1B20;
+$border-radius: 100px; // Pill shape for buttons
 
-$highlight: #9dd1ff;
-$highlight-white: #e7faec;
+$highlight: #EADDFF; // Primary Container (Light)
+$highlight-white: #FEFBFF; // Background (Light)
 
-$dark-font-color: #c9d1d9;
-$dark-font-color2: #020b05;
-$dark-font-color3: #6e7681;
-$dark-bg: #0d1117;
-$dark-bg2: #010409;
-$dark-border-color: #21262d;
-$dark-header-bg: #161b22;
-$dark-hover-bg: #1c2128;
+$dark-font-color: #E6E1E5; // On-Surface (Dark)
+$dark-font-color2: #381E72; // On-Primary-Container (Dark)
+$dark-font-color3: #CAC4D0; // On-Surface-Variant (Dark)
+$dark-bg: #141218; // Surface Container Lowest (Dark)
+$dark-bg2: #211F26; // Surface Container Low (Dark)
+$dark-border-color: #49454F; // Outline (Dark)
+$dark-header-bg: #2B2930; // Surface Container (Dark)
+$dark-hover-bg: #36343B; // Surface Container High (Dark)
 
 $easing-in: cubic-bezier(0.54, 0.78, 0.55, 0.97);
 $easing-out: cubic-bezier(0.25, 0.46, 0.45, 0.94);
@@ -24,5 +24,5 @@ $easing-in-out: cubic-bezier(0.79, 0.14, 0.15, 0.86);
 
 $dropdown-border-radius: 0.5rem;
 
-$primary-gradient: linear-gradient(135deg, #58b9ff 0%, #74c2ff 60%, #86e6a9);
-$primary-gradient-active: linear-gradient(135deg, #58b9ff 0%, #74c2ff 45%, #86e6a9);
+$primary-gradient: #6750A4; // Material uses solid colors, no gradient
+$primary-gradient-active: #D0BCFF; // Primary Container (Light) - fallback for active

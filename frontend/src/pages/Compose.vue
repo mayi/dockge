@@ -1,84 +1,86 @@
 <template>
     <transition name="slide-fade" appear>
         <div>
-            <h1 v-if="isAdd" class="mb-3">{{ $t("compose") }}</h1>
-            <h1 v-else class="mb-3">
-                <Uptime :stack="globalStack" :pill="true" /> {{ stack.name }}
-                <span v-if="$root.agentCount > 1" class="agent-name">
-                    ({{ endpointDisplay }})
-                </span>
-            </h1>
-
-            <div v-if="stack.isManagedByDockge" class="mb-3 action-bar">
-                <div class="btn-group-responsive" role="group">
-                    <button v-if="isEditMode" class="btn btn-primary" :disabled="processing" @click="deployStack">
-                        <font-awesome-icon icon="rocket" class="me-1" />
-                        {{ $t("deployStack") }}
-                    </button>
-
-                    <button v-if="isEditMode" class="btn btn-normal" :disabled="processing" @click="saveStack">
-                        <font-awesome-icon icon="save" class="me-1" />
-                        {{ $t("saveStackDraft") }}
-                    </button>
-
-                    <button v-if="!isEditMode" class="btn btn-secondary" :disabled="processing" @click="enableEditMode">
-                        <font-awesome-icon icon="pen" class="me-1" />
-                        {{ $t("editStack") }}
-                    </button>
-
-                    <button v-if="!isEditMode && !active" class="btn btn-primary" :disabled="processing" @click="startStack">
-                        <font-awesome-icon icon="play" class="me-1" />
-                        {{ $t("startStack") }}
-                    </button>
-
-                    <button v-if="!isEditMode && active" class="btn btn-normal " :disabled="processing" @click="confirmRestart">
-                        <font-awesome-icon icon="rotate" class="me-1" />
-                        {{ $t("restartStack") }}
-                    </button>
-
-                    <button v-if="!isEditMode" class="btn btn-normal" :disabled="processing" @click="confirmUpdate">
-                        <font-awesome-icon icon="cloud-arrow-down" class="me-1" />
-                        {{ $t("updateStack") }}
-                    </button>
-
-                    <button v-if="!isEditMode && active" class="btn btn-normal" :disabled="processing" @click="confirmStop">
-                        <font-awesome-icon icon="stop" class="me-1" />
-                        {{ $t("stopStack") }}
-                    </button>
-
-                    <BDropdown right text="" variant="normal">
-                        <BDropdownItem @click="confirmDown">
-                            <font-awesome-icon icon="stop" class="me-1" />
-                            {{ $t("downStack") }}
-                        </BDropdownItem>
-                    </BDropdown>
+            <div class="d-flex justify-content-between align-items-center mb-3">
+                <h1 v-if="isAdd" class="mb-0">{{ $t("compose") }}</h1>
+                <h1 v-else class="mb-0">
+                    <Uptime :stack="globalStack" :pill="true" /> {{ stack.name }}
+                    <span v-if="$root.agentCount > 1" class="agent-name">
+                        ({{ endpointDisplay }})
+                    </span>
+                </h1>
+                
+                <!-- Page Level Actions -->
+                <div v-if="stack.isManagedByDockge" class="d-flex gap-2">
+                    <template v-if="isEditMode">
+                        <button v-if="!isAdd" class="btn btn-normal" :disabled="processing" @click="discardStack">
+                            {{ $t("discardStack") }}
+                        </button>
+                        <button class="btn btn-primary shadow-sm" :disabled="processing" @click="saveStack">
+                            <font-awesome-icon icon="save" class="me-1" /> {{ $t("saveStackDraft") }}
+                        </button>
+                    </template>
+                    <template v-else>
+                        <button class="btn btn-danger" :disabled="processing" @click="showDeleteDialog = !showDeleteDialog">
+                            <font-awesome-icon icon="trash" class="me-1" /> {{ $t("deleteStack") }}
+                        </button>
+                    </template>
                 </div>
+            </div>
 
-                <button v-if="isEditMode && !isAdd" class="btn btn-normal ms-2" :disabled="processing" @click="discardStack">{{ $t("discardStack") }}</button>
-                <button v-if="!isEditMode" class="btn btn-danger ms-2" :disabled="processing" @click="showDeleteDialog = !showDeleteDialog">
-                    <font-awesome-icon icon="trash" class="me-1" />
-                    {{ $t("deleteStack") }}
-                </button>
+            <div v-if="stack.isManagedByDockge && !isEditMode" class="mb-4">
+                <div class="action-bar d-flex flex-wrap gap-3 align-items-center">
+                    
+                    <!-- 1. Primary Actions (State/Edit) -->
+                    <div v-if="!active" class="d-flex flex-wrap gap-2 align-items-center">
+                        <button class="btn btn-primary shadow-sm" :disabled="processing" @click="startStack">
+                            <font-awesome-icon icon="play" class="me-1" /> {{ $t("startStack") }}
+                        </button>
+                    </div>
+
+
+
+                    <!-- 2. Lifecycle Operations (Segmented Group) -->
+                    <div v-if="active" class="btn-group shadow-sm" role="group" aria-label="Lifecycle Actions">
+                        <button class="btn btn-outline-secondary" :disabled="processing" @click="confirmRestart" title="Restart">
+                            <font-awesome-icon icon="rotate" class="me-1" /> <span class="d-none d-xl-inline">{{ $t("restartStack") }}</span>
+                        </button>
+                        <button class="btn btn-outline-secondary" :disabled="processing" @click="confirmUpdate" title="Update">
+                            <font-awesome-icon icon="cloud-arrow-down" class="me-1" /> <span class="d-none d-xl-inline">{{ $t("updateStack") }}</span>
+                        </button>
+                        <button class="btn btn-outline-secondary" :disabled="processing" @click="confirmStop" title="Stop">
+                            <font-awesome-icon icon="stop" class="me-1" /> <span class="d-none d-xl-inline">{{ $t("stopStack") }}</span>
+                        </button>
+                        <button class="btn btn-outline-secondary" :disabled="processing" @click="confirmDown" title="Down">
+                            <font-awesome-icon icon="arrow-down" class="me-1" /> <span class="d-none d-xl-inline">{{ $t("downStack") }}</span>
+                        </button>
+                    </div>
+
+                </div>
             </div>
 
             <!-- URLs -->
-            <div v-if="urls.length > 0" class="mb-3">
-                <a v-for="(url, index) in urls" :key="index" target="_blank" :href="url.url">
-                    <span class="badge bg-secondary me-2">{{ url.display }}</span>
+            <div v-if="urls.length > 0" class="mb-4 d-flex gap-2 flex-wrap">
+                <a v-for="(url, index) in urls" :key="index" target="_blank" :href="url.url" class="text-decoration-none">
+                    <span class="badge bg-primary px-3 py-2 rounded-pill shadow-sm">{{ url.display }}</span>
                 </a>
             </div>
 
             <!-- Progress Terminal -->
             <transition name="slide-fade" appear>
-                <Terminal
-                    v-show="showProgressTerminal"
-                    ref="progressTerminal"
-                    class="mb-3 terminal"
-                    :name="terminalName"
-                    :endpoint="endpoint"
-                    :rows="progressTerminalRows"
-                    @has-data="showProgressTerminal = true; submitted = true;"
-                ></Terminal>
+                <div v-show="showProgressTerminal" class="position-relative mb-3">
+                    <button class="btn btn-sm btn-dark position-absolute top-0 end-0 m-2" style="z-index: 10; opacity: 0.8;" @click="showProgressTerminal = false">
+                        <font-awesome-icon icon="times" class="me-1" /> {{ $t("hide") }}
+                    </button>
+                    <Terminal
+                        ref="progressTerminal"
+                        class="terminal"
+                        :name="terminalName"
+                        :endpoint="endpoint"
+                        :rows="progressTerminalRows"
+                        @has-data="showProgressTerminal = true; submitted = true;"
+                    ></Terminal>
+                </div>
             </transition>
 
             <div v-if="stack.isManagedByDockge" class="row">
@@ -107,18 +109,23 @@
                     </div>
 
                     <!-- Containers -->
-                    <h4 class="mb-3">{{ $tc("container", 2) }}</h4>
+                    <!-- Containers -->
+                    <div class="d-flex align-items-center mb-3" style="min-height: 40px;">
+                        <h4 class="mb-0">{{ $tc("container", 2) }}</h4>
+                    </div>
 
-                    <div v-if="isEditMode" class="input-group mb-3">
-                        <input
-                            v-model="newContainerName"
-                            :placeholder="$t(`New Container Name...`)"
-                            class="form-control"
-                            @keyup.enter="addContainer"
-                        />
-                        <button class="btn btn-primary" @click="addContainer">
-                            {{ $t("addContainer") }}
-                        </button>
+                    <div v-if="isEditMode" class="shadow-box mb-3">
+                        <div class="input-group">
+                            <input
+                                v-model="newContainerName"
+                                :placeholder="$t(`New Container Name...`)"
+                                class="form-control"
+                                @keyup.enter="addContainer"
+                            />
+                            <button class="btn btn-primary" @click="addContainer">
+                                <font-awesome-icon icon="plus" class="me-1 d-none d-md-inline" /> {{ $t("addContainer") }}
+                            </button>
+                        </div>
                     </div>
 
                     <div ref="containerList">
@@ -132,8 +139,6 @@
                             :ports="serviceStatusList[name]?.ports"
                         />
                     </div>
-
-                    <button v-if="false && isEditMode && jsonConfig.services && Object.keys(jsonConfig.services).length > 0" class="btn btn-normal mb-3" @click="addContainer">{{ $t("addContainer") }}</button>
 
                     <!-- General -->
                     <div v-if="isEditMode">
@@ -152,19 +157,26 @@
                     <!-- Combined Terminal Output -->
                     <div v-show="!isEditMode">
                         <h4 class="mb-3">{{ $t("terminal") }}</h4>
-                        <Terminal
-                            ref="combinedTerminal"
-                            class="mb-3 terminal"
-                            :name="combinedTerminalName"
-                            :endpoint="endpoint"
-                            :rows="combinedTerminalRows"
-                            :cols="combinedTerminalCols"
-                            style="height: 315px;"
-                        ></Terminal>
+                        <div class="shadow-box mb-3 p-0 overflow-hidden">
+                            <Terminal
+                                ref="combinedTerminal"
+                                class="terminal m-0"
+                                :name="combinedTerminalName"
+                                :endpoint="endpoint"
+                                :rows="combinedTerminalRows"
+                                :cols="combinedTerminalCols"
+                                style="height: 315px; border-radius: 0;"
+                            ></Terminal>
+                        </div>
                     </div>
                 </div>
                 <div class="col-12 col-lg-6">
-                    <h4 class="mb-3">{{ stack.composeFileName }}</h4>
+                    <div class="d-flex justify-content-between align-items-center mb-3" style="min-height: 40px;">
+                        <h4 class="mb-0">{{ stack.composeFileName }}</h4>
+                        <button v-if="!isEditMode" class="btn btn-secondary" :disabled="processing" @click="enableEditMode">
+                            <font-awesome-icon icon="pen" class="me-1" /> {{ $t("editStack") }}
+                        </button>
+                    </div>
 
                     <!-- YAML editor -->
                     <div class="shadow-box mb-3 editor-box" :class="{'edit-mode' : isEditMode}">
@@ -531,6 +543,9 @@ export default {
 
     },
     methods: {
+        showProgressTerminalOnAction() {
+            this.showProgressTerminal = true;
+        },
         startServiceStatusTimeout() {
             clearTimeout(serviceStatusTimeout);
             serviceStatusTimeout = setTimeout(async () => {
@@ -598,6 +613,7 @@ export default {
 
         deployStack() {
             this.processing = true;
+            this.showProgressTerminalOnAction();
 
             if (!this.jsonConfig.services) {
                 this.$root.toastError("No services found in compose.yaml");
@@ -641,6 +657,7 @@ export default {
 
         saveStack() {
             this.processing = true;
+            this.showProgressTerminalOnAction();
 
             this.$root.emitAgent(this.stack.endpoint, "saveStack", this.stack.name, this.stack.composeYAML, this.stack.composeENV, this.isAdd, (res) => {
                 this.processing = false;
@@ -655,6 +672,7 @@ export default {
 
         startStack() {
             this.processing = true;
+            this.showProgressTerminalOnAction();
 
             this.$root.emitAgent(this.endpoint, "startStack", this.stack.name, (res) => {
                 this.processing = false;
@@ -664,6 +682,7 @@ export default {
 
         stopStack() {
             this.processing = true;
+            this.showProgressTerminalOnAction();
 
             this.$root.emitAgent(this.endpoint, "stopStack", this.stack.name, (res) => {
                 this.processing = false;
@@ -673,6 +692,7 @@ export default {
 
         downStack() {
             this.processing = true;
+            this.showProgressTerminalOnAction();
 
             this.$root.emitAgent(this.endpoint, "downStack", this.stack.name, (res) => {
                 this.processing = false;
@@ -682,6 +702,7 @@ export default {
 
         restartStack() {
             this.processing = true;
+            this.showProgressTerminalOnAction();
 
             this.$root.emitAgent(this.endpoint, "restartStack", this.stack.name, (res) => {
                 this.processing = false;
@@ -691,6 +712,7 @@ export default {
 
         updateStack() {
             this.processing = true;
+            this.showProgressTerminalOnAction();
 
             this.$root.emitAgent(this.endpoint, "updateStack", this.stack.name, (res) => {
                 this.processing = false;

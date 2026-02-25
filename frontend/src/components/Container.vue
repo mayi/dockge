@@ -20,25 +20,20 @@
                 </div>
             </div>
             <div class="col-12 col-sm-5 mt-2 mt-sm-0">
-                <div class="function">
+                <div class="function gap-2">
                     <router-link v-if="!isEditMode" class="btn btn-normal" :to="terminalRouteLink" disabled="">
-                        <font-awesome-icon icon="terminal" />
-                        Bash
+                        <font-awesome-icon icon="terminal" class="me-1" /> Bash
                     </router-link>
+                    <template v-if="isEditMode">
+                        <button class="btn rounded-circle px-3 shadow-sm" :class="showConfig ? 'btn-primary' : 'btn-normal'" @click="showConfig = !showConfig" :title="$t('Edit')">
+                            <font-awesome-icon icon="pen" />
+                        </button>
+                        <button class="btn btn-danger rounded-circle px-3 shadow-sm" @click="remove" :title="$t('deleteContainer')">
+                            <font-awesome-icon icon="trash" />
+                        </button>
+                    </template>
                 </div>
             </div>
-        </div>
-
-        <div v-if="isEditMode" class="mt-2">
-            <button class="btn btn-normal me-2" @click="showConfig = !showConfig">
-                <font-awesome-icon icon="edit" />
-                {{ $t("Edit") }}
-            </button>
-            <button v-if="false" class="btn btn-normal me-2">Rename</button>
-            <button class="btn btn-danger me-2" @click="remove">
-                <font-awesome-icon icon="trash" />
-                {{ $t("deleteContainer") }}
-            </button>
         </div>
 
         <transition name="slide-fade" appear>

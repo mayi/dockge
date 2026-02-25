@@ -10,8 +10,8 @@
         </div>
 
         <!-- Desktop header -->
-        <header v-if="! $root.isMobile" class="d-flex flex-wrap align-items-center justify-content-center py-3 mb-3 border-bottom">
-            <router-link to="/" class="d-flex align-items-center mb-3 mb-md-0 me-md-auto text-dark text-decoration-none">
+        <header v-if="! $root.isMobile" class="d-flex flex-wrap align-items-center justify-content-center py-3 px-4 mb-3 border-bottom sticky-top top-header">
+            <router-link to="/" class="d-flex align-items-center mb-0 me-md-auto text-dark text-decoration-none">
                 <object class="bi me-2 ms-4 logo-icon" width="36" height="36" data="/icon.svg" />
                 <span class="fs-4 title">Dockge</span>
             </router-link>
@@ -169,36 +169,59 @@ export default {
     z-index: 1000;
     position: fixed;
     bottom: 0;
-    height: calc(60px + env(safe-area-inset-bottom));
+    height: calc(80px + env(safe-area-inset-bottom)); // M3 Navigation Bar is taller
     width: 100%;
     left: 0;
-    background-color: #fff;
-    box-shadow: 0 15px 47px 0 rgba(0, 0, 0, 0.05), 0 5px 14px 0 rgba(0, 0, 0, 0.05);
+    background-color: #F3EDF7; // Surface Container (Light)
+    border-top: none;
+    box-shadow: 0 -1px 3px 0 rgba(0, 0, 0, 0.1), 0 -1px 2px 0 rgba(0, 0, 0, 0.05); // Elevation 2
     text-align: center;
     white-space: nowrap;
-    padding: 0 10px env(safe-area-inset-bottom);
+    padding: 0 8px env(safe-area-inset-bottom);
+    display: flex;
+    justify-content: space-around;
+    align-items: center;
 
     a {
         text-align: center;
-        width: 25%;
-        display: inline-block;
-        height: 100%;
-        padding: 8px 10px 0;
-        font-size: 13px;
-        color: #c1c1c1;
-        overflow: hidden;
+        width: auto;
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        justify-content: center;
+        padding: 12px 0 16px;
+        font-size: 12px; // M3 Label Text
+        color: #49454F; // On-Surface-Variant
         text-decoration: none;
+        font-weight: 500;
 
         &.router-link-exact-active, &.active {
-            color: $primary;
-            font-weight: bold;
+            color: #1D1B20; // On-Surface
+            font-weight: 700;
+            
+            .icon-wrapper {
+                background-color: #EADDFF; // Secondary Container
+                color: #21005D; // On-Secondary-Container
+            }
+        }
+
+        .icon-wrapper {
+            width: 64px;
+            height: 32px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            border-radius: 16px; // Pill shape for icon container
+            margin-bottom: 4px;
+            transition: background-color 0.2s cubic-bezier(0.2, 0, 0, 1);
         }
 
         div {
-            font-size: 20px;
+            font-size: 24px;
         }
     }
 }
+
 
 main {
     min-height: calc(100vh - 160px);
@@ -213,7 +236,12 @@ main {
 }
 
 .logo-icon {
-    filter: drop-shadow(0 2px 6px rgba($primary, 0.25));
+    filter: drop-shadow(0 4px 6px rgba($primary, 0.3));
+    transition: transform 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+    
+    &:hover {
+        transform: scale(1.1) rotate(-5deg);
+    }
 }
 
 .nav {
@@ -236,22 +264,37 @@ main {
     .nav-link {
         cursor: pointer;
         display: flex;
-        gap: 6px;
+        gap: 8px;
         align-items: center;
-        background-color: rgba(200, 200, 200, 0.2);
-        padding: 0.5rem 0.8rem;
+        background-color: #EADDFF; // Primary Container (Light)
+        color: #21005D; // On-Primary Container
+        padding: 0.5rem 1rem;
+        border-radius: 100px; // Pill
+        transition: background-color 0.2s cubic-bezier(0.2, 0, 0, 1);
 
         &:hover {
-            background-color: rgba(255, 255, 255, 0.2);
+            background-color: #D0BCFF; // Primary Container Hover
+        }
+        
+        .dark & {
+            background-color: #4F378B; // Primary Container (Dark)
+            color: #EADDFF; // On-Primary Container (Dark)
+            
+            &:hover {
+                background-color: #6750A4;
+            }
         }
     }
 
     .dropdown-menu {
-        transition: all 0.2s;
+        transition: all 0.2s cubic-bezier(0.2, 0, 0, 1);
         padding-left: 0;
         padding-bottom: 0;
         margin-top: 8px !important;
-        border-radius: 16px;
+        border-radius: 4px; // M3 standard menu radius
+        border: none;
+        background-color: #F3EDF7; // Surface Container High
+        box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06); // Elevation 3
         overflow: hidden;
 
         .dropdown-divider {
@@ -293,29 +336,37 @@ main {
         display: flex;
         align-items: center;
         justify-content: center;
-        color: white;
+        color: #FFFFFF;
         background-color: $primary;
-        width: 24px;
-        height: 24px;
-        margin-right: 5px;
-        border-radius: 50rem;
-        font-weight: bold;
-        font-size: 10px;
+        width: 32px; // Slightly larger for M3
+        height: 32px;
+        border-radius: 100px;
+        font-weight: 500;
+        font-size: 14px;
+        box-shadow: none; // No shadow on avatar
     }
 }
 
-.dark {
-    header {
-        background-color: $dark-header-bg;
-        border-bottom-color: $dark-header-bg !important;
+.top-header {
+    background-color: #FEFBFF; // Surface (Light)
+    z-index: 1020;
+    border-bottom: 1px solid #CAC4D0 !important; // Outline Variant
+}
 
+.dark {
+    .top-header {
+        background-color: #141218; // Surface (Dark)
+        border-bottom-color: #49454F !important; // Outline (Dark)
+    }
+    
+    header {
         span {
-            color: #f0f6fc;
+            color: #E6E1E5; // On-Surface
         }
     }
 
     .bottom-nav {
-        background-color: $dark-bg;
+        background-color: #2B2930; // Surface Container High (Dark)
     }
 }
 </style>

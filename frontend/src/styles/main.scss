@@ -3,26 +3,32 @@
 @import "bootstrap-vue-next/dist/bootstrap-vue-next.css";
 
 #app {
-    font-family: BlinkMacSystemFont, segoe ui, Roboto, helvetica neue, Arial, noto sans, sans-serif, apple color emoji, segoe ui emoji, segoe ui symbol, noto color emoji;
+    font-family: "Roboto", "Helvetica Neue", Arial, sans-serif;
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+    background-color: #FEFBFF;
+    color: #1D1B20;
 }
 
 h1 {
     font-size: 32px;
-    font-weight: 700;
-    letter-spacing: -0.3px;
+    font-weight: 400; // M3 Display
+    letter-spacing: 0;
 }
 
 h2 {
-    font-size: 26px;
-    font-weight: 600;
+    font-size: 28px;
+    font-weight: 400; // M3 Headline
+    letter-spacing: 0;
 }
 
 textarea.form-control {
-    border-radius: 19px;
+    border-radius: 4px; // M3 text field standard
 }
 
 ::-webkit-scrollbar {
-    width: 10px;
+    width: 8px;
+    height: 8px;
 }
 
 .bg-maintenance {
@@ -62,15 +68,17 @@ textarea.form-control {
 
 // optgroup
 optgroup {
-    color: #b1b1b1;
+    color: #94a3b8;
+
     option {
-        color: #212529;
+        color: #1e293b;
     }
 }
 
 .dark {
     optgroup {
-        color: #535864;
+        color: #475569;
+
         option {
             color: $dark-font-color;
         }
@@ -79,8 +87,12 @@ optgroup {
 
 // Scrollbar
 ::-webkit-scrollbar-thumb {
-    background: #ccc;
-    border-radius: 20px;
+    background: #cbd5e1;
+    border-radius: 10px;
+
+    &:hover {
+        background: #94a3b8;
+    }
 }
 
 .modal {
@@ -88,12 +100,16 @@ optgroup {
 }
 
 .modal-content {
-    border-radius: 1rem;
-    box-shadow: 0 15px 70px rgba(0, 0, 0, 0.1);
+    border-radius: 28px; // M3 dialog standard
+    box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06); // M3 Elevation 3
+    border: none;
+    background-color: #F3EDF7; // Surface Container High (Light)
+    color: #1D1B20;
 
     .dark & {
-        box-shadow: 0 15px 70px rgb(0 0 0);
-        background-color: $dark-bg;
+        box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.5), 0 4px 6px -2px rgba(0, 0, 0, 0.3);
+        background-color: #2B2930; // Surface Container High (Dark)
+        color: #E6E1E5;
     }
 }
 
@@ -103,48 +119,149 @@ optgroup {
 }
 
 .shadow-box {
-    box-shadow: 0 10px 40px rgba(0, 0, 0, 0.08);
-    padding: 10px;
-    border-radius: 14px;
-    transition: box-shadow 0.2s ease;
+    box-shadow: 0 1px 3px 1px rgba(0, 0, 0, 0.15), 0 1px 2px 0 rgba(0, 0, 0, 0.3); // M3 Elevation 1
+    padding: 20px;
+    border-radius: 16px; // M3 Card standard
+    background-color: #FAF8FC; // distinct from main #FEFBFF background
+    border: 1px solid rgba(0, 0, 0, 0.05);
+    transition: box-shadow 0.2s cubic-bezier(0.2, 0, 0, 1), transform 0.2s cubic-bezier(0.2, 0, 0, 1);
 
     &.big-padding {
-        padding: 20px;
+        padding: 24px;
     }
 
     &:hover {
-        box-shadow: 0 12px 48px rgba(0, 0, 0, 0.12);
+        box-shadow: 0 2px 6px 2px rgba(0, 0, 0, 0.15), 0 1px 2px 0 rgba(0, 0, 0, 0.3); // M3 Elevation 2
+    }
+
+    .dark & {
+        // Ensure dark mode overrides Card properties correctly
+        background-color: #2F2D32; // Surface Container High (Dark)
+        border-color: rgba(255, 255, 255, 0.05);
+        box-shadow: 0 1px 3px 0 rgba(0, 0, 0, 0.5), 0 1px 2px -1px rgba(0, 0, 0, 0.5);
+
+        &:hover {
+            box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.5), 0 2px 4px -2px rgba(0, 0, 0, 0.5); // M3 Dark Elevation 2
+        }
     }
 }
 
 .btn {
-    padding-left: 20px;
-    padding-right: 20px;
+    padding-left: 24px;
+    padding-right: 24px;
+    font-weight: 500;
+    transition: background-color 0.2s cubic-bezier(0.2, 0, 0, 1), box-shadow 0.2s cubic-bezier(0.2, 0, 0, 1), color 0.2s cubic-bezier(0.2, 0, 0, 1);
+    border-radius: 100px; // Pill shape (M3 Button)
+    text-transform: none; // M3 does not strictly uppercase
+
+    // CSS-only "Ripple" approximation
+    position: relative;
+    overflow: hidden;
+
+    &::after {
+        content: "";
+        position: absolute;
+        top: 50%;
+        left: 50%;
+        width: 100%;
+        height: 100%;
+        background: radial-gradient(circle, rgba(255, 255, 255, 0.4) 10%, transparent 10.01%);
+        background-repeat: no-repeat;
+        background-position: 50%;
+        transform: translate(-50%, -50%) scale(10);
+        opacity: 0;
+        transition: transform 0.3s, opacity 0.5s;
+        pointer-events: none;
+    }
+
+    &:active::after {
+        transform: translate(-50%, -50%) scale(0);
+        opacity: 0.3;
+        transition: 0s;
+    }
+}
+
+.btn-group {
+    border-radius: 100px;
+
+    >.btn {
+        padding-left: 16px;
+        padding-right: 16px;
+    }
+
+    >.btn:first-child {
+        border-top-left-radius: 100px !important;
+        border-bottom-left-radius: 100px !important;
+    }
+
+    >.btn:last-child {
+        border-top-right-radius: 100px !important;
+        border-bottom-right-radius: 100px !important;
+    }
+
+    >.btn:not(:first-child):not(:last-child) {
+        border-radius: 0 !important;
+    }
 }
 
 .btn-sm {
-    border-radius: 25px;
+    padding-left: 16px;
+    padding-right: 16px;
 }
 
 .btn-primary {
-    color: white;
-    background: $primary-gradient;
+    color: #FFFFFF;
+    background-color: $primary;
     border: none;
-    transition: transform 0.15s ease, box-shadow 0.15s ease, background 0.2s ease;
+    box-shadow: 0 1px 2px 0 rgba(0, 0, 0, 0.3), 0 1px 3px 1px rgba(0, 0, 0, 0.15); // M3 Elevation 1
 
-    &:hover, &:active, &:focus, &.active {
-        color: white;
-        background: $primary-gradient-active;
-        border-color: $highlight;
-        box-shadow: 0 4px 16px rgba($primary, 0.3);
-    }
-
-    &:active {
-        transform: scale(0.97);
+    &:hover,
+    &:active,
+    &:focus,
+    &.active {
+        color: #FFFFFF;
+        background-color: #553f88; // State layer on primary
+        box-shadow: 0 1px 2px 0 rgba(0, 0, 0, 0.3), 0 2px 6px 2px rgba(0, 0, 0, 0.15); // M3 Elevation 2
     }
 
     .dark & {
-        color: $dark-font-color2;
+        color: #381E72; // On-Primary (Dark)
+        background-color: #D0BCFF; // Primary (Dark)
+
+        &:hover,
+        &:active,
+        &:focus,
+        &.active {
+            color: #381E72;
+            background-color: #E8DEF8; // State layer on primary (Dark)
+        }
+    }
+}
+
+.btn-outline-secondary {
+    color: #49454F; // On-Surface-Variant
+    border: 1px solid #79747E; // Outline
+    background-color: transparent;
+
+    &:hover,
+    &:active,
+    &:focus,
+    &.active {
+        background-color: rgba(73, 69, 79, 0.08); // State Layer
+        color: #1D1B20;
+    }
+
+    .dark & {
+        color: #CAC4D0;
+        border-color: #938F99;
+
+        &:hover,
+        &:active,
+        &:focus,
+        &.active {
+            background-color: rgba(202, 196, 208, 0.08); // State Layer (Dark)
+            color: #E6E1E5;
+        }
     }
 }
 
@@ -164,7 +281,10 @@ optgroup {
 .btn-warning {
     color: white;
 
-    &:hover, &:active, &:focus, &.active {
+    &:hover,
+    &:active,
+    &:focus,
+    &.active {
         color: white;
     }
 }
@@ -172,7 +292,10 @@ optgroup {
 .btn-info {
     color: white;
 
-    &:hover, &:active, &:focus, &.active {
+    &:hover,
+    &:active,
+    &:focus,
+    &.active {
         color: white;
     }
 }
@@ -250,16 +373,22 @@ optgroup {
 
 // Dark Theme override here
 .dark {
-    background-color: #090c10;
+    background-color: #141218; // Surface Lowest (Dark)
     color: $dark-font-color;
 
-    mark, .mark {
+    mark,
+    .mark {
         background-color: #b6ad86;
     }
 
-    &::-webkit-scrollbar-thumb, ::-webkit-scrollbar-thumb {
-        background: $dark-border-color;
-        border-radius: 20px;
+    &::-webkit-scrollbar-thumb,
+    ::-webkit-scrollbar-thumb {
+        background: #49454F;
+        border-radius: 10px;
+
+        &:hover {
+            background: #938F99;
+        }
     }
 
     .shadow-box {
@@ -320,21 +449,24 @@ optgroup {
         background-color: $dark-bg;
     }
 
-    .form-control, .form-select {
+    .form-control,
+    .form-select {
         border-color: $dark-border-color;
     }
 
-    .form-control:disabled, .form-control[readonly] {
+    .form-control:disabled,
+    .form-control[readonly] {
         background-color: #232f3b;
         opacity: 1;
     }
 
-    .table-hover > tbody > tr:hover > * {
+    .table-hover>tbody>tr:hover>* {
         --bs-table-accent-bg: #070a10;
         color: $dark-font-color;
     }
 
-    .nav-pills .nav-link.active, .nav-pills .show > .nav-link {
+    .nav-pills .nav-link.active,
+    .nav-pills .show>.nav-link {
         color: $dark-font-color2;
         background: $primary-gradient;
 
@@ -367,10 +499,13 @@ optgroup {
     }
 
     .btn-warning {
-        color: $dark-font-color2;
+        color: white;
 
-        &:hover, &:active, &:focus, &.active {
-            color: $dark-font-color2;
+        &:hover,
+        &:active,
+        &:focus,
+        &.active {
+            color: white;
         }
     }
 
@@ -430,6 +565,7 @@ optgroup {
     }
 
     .alert {
+
         &.bg-info,
         &.bg-warning,
         &.bg-danger,
@@ -441,13 +577,44 @@ optgroup {
 }
 
 // Floating Label
-.form-floating > .form-control:focus ~ label::after, .form-floating > .form-control:not(:placeholder-shown) ~ label::after, .form-floating > .form-control-plaintext ~ label::after, .form-floating > .form-select ~ label::after {
-    background-color: transparent;
+.form-floating>.form-control:focus~label::after,
+.form-floating>.form-control:not(:placeholder-shown)~label::after,
+.form-floating>.form-control-plaintext~label::after,
+.form-floating>.form-select~label::after {
+    background-color: #FEFBFF;
 }
 
-.form-floating > label {
+.form-floating>label {
     .dark & {
-        color: $dark-font-color3 !important;
+        color: #CAC4D0 !important;
+    }
+}
+
+// Global Form Controls (Outlined text field style)
+.form-control,
+.form-select {
+    border-radius: 4px;
+    padding: 0.75rem 1rem;
+    border: 1px solid #79747E; // M3 Outline
+    background-color: #FEFBFF; // Surface
+    color: #1D1B20;
+    transition: all 0.2s cubic-bezier(0.2, 0, 0, 1);
+
+    &:focus {
+        border-color: $primary;
+        border-width: 2px;
+        box-shadow: none;
+        padding-left: calc(1rem - 1px); // compensate for border 
+    }
+
+    .dark & {
+        border-color: #938F99; // Outline (Dark)
+        background-color: #141218; // Surface Lowest
+        color: #E6E1E5;
+
+        &:focus {
+            border-color: #D0BCFF; // Primary (Dark)
+        }
     }
 }
 
@@ -535,6 +702,7 @@ optgroup {
         .title {
             display: inline-block;
             margin-top: -4px;
+            font-weight: 500;
         }
     }
 }
@@ -566,8 +734,9 @@ optgroup {
 
 [contenteditable=true] {
     transition: all $easing-in 0.2s;
-    background-color: rgba(239, 239, 239, 0.7);
-    border-radius: 8px;
+    background-color: rgba(241, 245, 249, 0.7); // slate-100
+    border-radius: 0.5rem;
+    padding: 0.25rem 0.5rem;
 
     &.no-bg {
         background-color: transparent !important;
@@ -575,15 +744,24 @@ optgroup {
 
     &:focus {
         outline: 0 solid #eee;
-        background-color: rgba(245, 245, 245, 0.9);
+        background-color: rgba(255, 255, 255, 0.9);
+        box-shadow: 0 0 0 2px rgba($primary, 0.2);
     }
 
     &:hover {
-        background-color: rgba(239, 239, 239, 0.8);
+        background-color: rgba(226, 232, 240, 0.8); // slate-200
     }
 
     .dark & {
-        background-color: rgba(239, 239, 239, 0.2);
+        background-color: rgba(30, 41, 59, 0.4); // slate-800
+
+        &:hover {
+            background-color: rgba(51, 65, 85, 0.6); // slate-700
+        }
+
+        &:focus {
+            background-color: rgba(15, 23, 42, 0.8); // slate-900
+        }
     }
 
     /*
@@ -598,11 +776,11 @@ optgroup {
 }
 
 .action {
-    transition: all $easing-in 0.2s;
+    transition: all cubic-bezier(0.4, 0, 0.2, 1) 0.2s;
 
     &:hover {
         cursor: pointer;
-        transform: scale(1.2);
+        transform: scale(1.15) translateY(-1px);
     }
 }
 
@@ -624,12 +802,13 @@ h5.settings-subheading::after {
 }
 
 /* required class */
-.code-editor, .css-editor {
+.code-editor,
+.css-editor {
     /* we dont use `language-` classes anymore so thats why we need to add background and text color manually */
 
-    border-radius: 1rem;
-    padding: 10px 5px;
-    border: 1px solid #ced4da;
+    border-radius: 0.75rem;
+    padding: 12px 8px;
+    border: 1px solid #cbd5e1;
 
     .dark & {
         background: $dark-bg2;
@@ -679,13 +858,14 @@ code {
     margin: 0;
     font-size: 85%;
     white-space: break-spaces;
-    background-color: rgba(239, 239, 239, 0.15);
+    background-color: rgba(241, 245, 249, 0.8); // slate-100
 
     border-radius: 6px;
     font-family: SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", "Courier New", monospace;
-    color: black;
+    color: #0f172a; // slate-900
 
     .dark & {
+        background-color: rgba(30, 41, 59, 0.6); // slate-800
         color: $dark-font-color;
     }
 }
@@ -696,20 +876,26 @@ code {
 
 
 .cm-gutters {
-	background-color: transparent !important;
+    background-color: transparent !important;
 }
+
 .dark [contenteditable="true"] {
-	background-color: transparent !important;
+    background-color: transparent !important;
 }
+
 .cm-editor {
-	background-color: transparent !important;
+    background-color: transparent !important;
 }
-.cm-activeLine, .cm-activeLineGutter {
-	background-color: transparent !important;
+
+.cm-activeLine,
+.cm-activeLineGutter {
+    background-color: transparent !important;
 }
+
 .cm-selectionBackground {
     background-color: #74c2ff3d !important;
 }
+
 .cm-focused {
     outline: none !important;
 }
@@ -754,7 +940,8 @@ code {
     }
 
     // Make form controls more touch-friendly
-    .form-control, .form-select {
+    .form-control,
+    .form-select {
         font-size: 16px; // Prevents iOS zoom on focus
         padding: 8px 12px;
     }
