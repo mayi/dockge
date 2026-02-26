@@ -4,6 +4,9 @@
             <h1 class="mb-3">{{$t("terminal")}} - {{ serviceName }} ({{ stackName }})</h1>
 
             <div class="mb-3">
+                <router-link :to="composePath" class="btn btn-normal me-2">
+                    <font-awesome-icon icon="times" class="me-1" /> {{ $t("close") }}
+                </router-link>
                 <router-link :to="sh" class="btn btn-normal me-2">{{ $t("Switch to sh") }}</router-link>
             </div>
 
@@ -14,9 +17,11 @@
 
 <script>
 import { getContainerExecTerminalName } from "../../../common/util-common";
+import { FontAwesomeIcon } from "@fortawesome/vue-fontawesome";
 
 export default {
     components: {
+        FontAwesomeIcon,
     },
     data() {
         return {
@@ -38,6 +43,13 @@ export default {
         },
         terminalName() {
             return getContainerExecTerminalName(this.endpoint, this.stackName, this.serviceName, 0);
+        },
+        composePath() {
+            if (this.endpoint) {
+                return `/compose/${this.stackName}/${this.endpoint}`;
+            } else {
+                return `/compose/${this.stackName}`;
+            }
         },
         sh() {
             let endpoint = this.$route.params.endpoint;
