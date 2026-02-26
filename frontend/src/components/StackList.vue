@@ -360,6 +360,9 @@ export default {
     height: calc(100vh - 150px);
     position: sticky;
     top: 10px;
+    border: none;
+    background: transparent;
+    box-shadow: none;
 }
 
 .small-padding {
@@ -368,15 +371,16 @@ export default {
 }
 
 .list-header {
-    border-bottom: 1px solid #dee2e6;
-    border-radius: 10px 10px 0 0;
-    margin: -10px;
-    margin-bottom: 10px;
-    padding: 10px;
+    border-bottom: 1px solid #EADDFF; // Primary Container (Light)
+    border-radius: 12px 12px 0 0;
+    margin: -12px -12px 12px -12px;
+    padding: 12px;
+    background-color: #FEFBFF; // Surface
+    border-bottom: 1px solid #CAC4D0; // Outline Variant
 
     .dark & {
-        background-color: $dark-header-bg;
-        border-bottom: 0;
+        background-color: #141218; // Surface (Dark)
+        border-bottom: 1px solid #49454F; // Outline (Dark)
     }
 }
 
@@ -443,6 +447,15 @@ export default {
 
 .search-input {
     max-width: 15em;
+    border-radius: 100px;
+    padding-left: 1rem;
+    padding-right: 1rem;
+    background-color: #F3EDF7; // Surface Container High
+    border: none;
+    
+    .dark & {
+        background-color: #2B2930; // Surface Container High (Dark)
+    }
 }
 
 .stack-item {

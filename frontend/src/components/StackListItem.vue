@@ -133,34 +133,36 @@ export default {
     text-decoration: none;
     display: flex;
     align-items: center;
-    min-height: 52px;
-    border-radius: 10px;
-    transition: all ease-in-out 0.15s;
+    min-height: 56px; // M3 List Item standard height
+    border-radius: 0; // standard list item
+    transition: background-color 0.2s cubic-bezier(0.2, 0, 0, 1);
     width: 100%;
-    padding: 5px 8px;
-    border: 1px solid transparent;
+    padding: 8px 16px;
+    border: none;
+    background-color: transparent;
 
     &.disabled {
-        opacity: 0.3;
+        opacity: 0.38; // M3 Disabled opacity
     }
     &:hover {
-        background-color: $highlight-white;
-        border-color: rgba($primary, 0.15);
-        transform: translateX(2px);
+        background-color: rgba(103, 80, 164, 0.08); // M3 State Layer (Hovered)
     }
     &.active {
-        background-color: rgba($primary, 0.08);
-        border-color: rgba($primary, 0.25);
+        background-color: #EADDFF; // M3 Secondary Container (Active)
+        color: #21005D; // On-Secondary Container
+
+        .title {
+            font-weight: 700;
+        }
 
         .dark & {
-            background-color: rgba($primary, 0.08);
-            border-color: rgba($primary, 0.2);
+            background-color: #4A4458; // Secondary Container (Dark)
+            color: #E8DEF8; // On-Secondary Container (Dark)
         }
     }
 
     .dark &:hover {
-        background-color: $dark-hover-bg;
-        border-color: rgba($primary, 0.15);
+        background-color: rgba(208, 188, 255, 0.08); // M3 State Layer (Dark Hovered)
     }
 
     .title {

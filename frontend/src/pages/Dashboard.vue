@@ -110,15 +110,14 @@ export default {
     z-index: 1000;
     display: flex;
     justify-content: space-around;
-    background-color: #fff;
-    border-top: 1px solid #e8e8e8;
-    padding: 6px 0 calc(6px + env(safe-area-inset-bottom));
-    box-shadow: 0 -4px 20px rgba(0, 0, 0, 0.06);
+    background-color: #F3EDF7; // Surface Container (Light)
+    border-top: none;
+    padding: 12px 0 calc(16px + env(safe-area-inset-bottom));
+    box-shadow: 0 -1px 3px 0 rgba(0, 0, 0, 0.1), 0 -1px 2px 0 rgba(0, 0, 0, 0.05); // Elevation 2
 
     .dark & {
-        background-color: $dark-header-bg;
-        border-top-color: $dark-border-color;
-        box-shadow: 0 -4px 20px rgba(0, 0, 0, 0.3);
+        background-color: #2B2930; // Surface Container High (Dark)
+        box-shadow: 0 -1px 3px 0 rgba(0, 0, 0, 0.5), 0 -1px 2px 0 rgba(0, 0, 0, 0.3); // Elevation 2 (Dark)
     }
 }
 
@@ -126,21 +125,39 @@ export default {
     display: flex;
     flex-direction: column;
     align-items: center;
-    gap: 2px;
-    padding: 6px 16px;
-    border-radius: 12px;
-    font-size: 11px;
+    gap: 4px;
+    padding: 4px 16px;
+    border-radius: 16px; // Pill shape for active icon background
+    font-size: 12px;
+    font-weight: 500;
     text-decoration: none;
-    color: $dark-font-color3;
-    transition: color 0.15s ease, background-color 0.15s ease;
+    color: #49454F; // On-Surface-Variant
+    transition: background-color 0.2s cubic-bezier(0.2, 0, 0, 1), color 0.2s;
 
     svg {
-        font-size: 18px;
+        font-size: 24px;
+        margin-bottom: 4px;
+        padding: 4px 16px; // Icon container padding
+        border-radius: 16px; // Icon Pill
+        transition: background-color 0.2s;
     }
 
     &.active {
-        color: $primary;
-        background-color: rgba($primary, 0.08);
+        color: #1D1B20; // On-Surface
+        
+        svg {
+            background-color: #EADDFF; // Secondary Container
+            color: #21005D; // On-Secondary Container
+        }
+        
+        .dark & {
+            color: #E6E1E5; // On-Surface (Dark)
+            
+            svg {
+                background-color: #4A4458; // Secondary Container (Dark)
+                color: #E8DEF8; // On-Secondary Container (Dark)
+            }
+        }
     }
 }
 
@@ -151,33 +168,36 @@ export default {
     top: 50%;
     transform: translateY(-50%);
     z-index: 1000;
-    background: $primary;
-    color: white;
+    background-color: #F3EDF7; // Surface Container High
+    color: #49454F; // On-Surface-Variant
     border: none;
-    border-radius: 0 8px 8px 0;
-    padding: 12px 8px;
+    border-radius: 0 16px 16px 0; // Large M3 border radius
+    padding: 24px 8px;
     cursor: pointer;
-    box-shadow: 2px 0 8px rgba(0, 0, 0, 0.15);
-    transition: all 0.3s $easing-in-out;
+    box-shadow: 0 1px 2px 0 rgba(0, 0, 0, 0.3), 0 1px 3px 1px rgba(0, 0, 0, 0.15); // Elevation 1
+    transition: background-color 0.2s cubic-bezier(0.2, 0, 0, 1), box-shadow 0.2s;
 
     &:hover {
-        padding-right: 12px;
-        box-shadow: 3px 0 12px rgba(0, 0, 0, 0.25);
+        background-color: #E8DEF8; // State layer
+        box-shadow: 0 1px 2px 0 rgba(0, 0, 0, 0.3), 0 2px 6px 2px rgba(0, 0, 0, 0.15); // Elevation 2
     }
 
     &.collapsed {
-        background: $primary-gradient;
-    }
-
-    svg {
-        font-size: 16px;
+        background-color: $primary; // Highlight when collapsed so it's visible
+        color: #FFFFFF;
     }
 
     .dark & {
-        box-shadow: 2px 0 8px rgba(0, 0, 0, 0.4);
-
+        background-color: #2B2930; // Surface Container High (Dark)
+        color: #CAC4D0; // On-Surface-Variant (Dark)
+        
         &:hover {
-            box-shadow: 3px 0 12px rgba(0, 0, 0, 0.6);
+            background-color: #4A4458; // State layer (Dark)
+        }
+        
+        &.collapsed {
+            background-color: #D0BCFF; // Primary (Dark)
+            color: #381E72; // On-Primary (Dark)
         }
     }
 }
