@@ -4,13 +4,13 @@
 
 # Dockge
 
+> **Fork Notice**: This is a fork of [louislam/dockge](https://github.com/louislam/dockge), originally created by [Louis Lam](https://github.com/louislam). Licensed under the [MIT License](./LICENSE).
+
 A fancy, easy-to-use and reactive self-hosted docker compose.yaml stack-oriented manager.
 
 [![GitHub Repo stars](https://img.shields.io/github/stars/mayi/dockge?logo=github&style=flat)](https://github.com/mayi/dockge) [![Docker Pulls](https://img.shields.io/docker/pulls/madcat1983/dockge?logo=docker)](https://hub.docker.com/r/madcat1983/dockge/tags) [![Docker Image Version (latest semver)](https://img.shields.io/docker/v/madcat1983/dockge/latest?label=docker%20image%20ver.)](https://hub.docker.com/r/madcat1983/dockge/tags) [![GitHub last commit (branch)](https://img.shields.io/github/last-commit/mayi/dockge/master?logo=github)](https://github.com/mayi/dockge/commits/master/)
 
 <img src="https://github.com/mayi/dockge/assets/1336778/26a583e1-ecb1-4a8d-aedf-76157d714ad7" width="900" alt="" />
-
-View Video: https://youtu.be/AWAlOQeNpgU?t=48
 
 ## ⭐ Features
 
