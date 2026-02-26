@@ -6,9 +6,9 @@
 
 A fancy, easy-to-use and reactive self-hosted docker compose.yaml stack-oriented manager.
 
-[![GitHub Repo stars](https://img.shields.io/github/stars/louislam/dockge?logo=github&style=flat)](https://github.com/louislam/dockge) [![Docker Pulls](https://img.shields.io/docker/pulls/louislam/dockge?logo=docker)](https://hub.docker.com/r/louislam/dockge/tags) [![Docker Image Version (latest semver)](https://img.shields.io/docker/v/louislam/dockge/latest?label=docker%20image%20ver.)](https://hub.docker.com/r/louislam/dockge/tags) [![GitHub last commit (branch)](https://img.shields.io/github/last-commit/louislam/dockge/master?logo=github)](https://github.com/louislam/dockge/commits/master/)
+[![GitHub Repo stars](https://img.shields.io/github/stars/mayi/dockge?logo=github&style=flat)](https://github.com/mayi/dockge) [![Docker Pulls](https://img.shields.io/docker/pulls/madcat1983/dockge?logo=docker)](https://hub.docker.com/r/madcat1983/dockge/tags) [![Docker Image Version (latest semver)](https://img.shields.io/docker/v/madcat1983/dockge/latest?label=docker%20image%20ver.)](https://hub.docker.com/r/madcat1983/dockge/tags) [![GitHub last commit (branch)](https://img.shields.io/github/last-commit/mayi/dockge/master?logo=github)](https://github.com/mayi/dockge/commits/master/)
 
-<img src="https://github.com/louislam/dockge/assets/1336778/26a583e1-ecb1-4a8d-aedf-76157d714ad7" width="900" alt="" />
+<img src="https://github.com/mayi/dockge/assets/1336778/26a583e1-ecb1-4a8d-aedf-76157d714ad7" width="900" alt="" />
 
 View Video: https://youtu.be/AWAlOQeNpgU?t=48
 
@@ -23,12 +23,12 @@ View Video: https://youtu.be/AWAlOQeNpgU?t=48
 - 🏪 Convert `docker run ...` commands into `compose.yaml`
 - 📙 File based structure - Dockge won't kidnap your compose files, they are stored on your drive as usual. You can interact with them using normal `docker compose` commands
 
-<img src="https://github.com/louislam/dockge/assets/1336778/cc071864-592e-4909-b73a-343a57494002" width=300 />
+<img src="https://github.com/mayi/dockge/assets/1336778/cc071864-592e-4909-b73a-343a57494002" width=300 />
 
 - 🚄 Reactive - Everything is just responsive. Progress (Pull/Up/Down) and terminal output are in real-time
 - 🐣 Easy-to-use & fancy UI - If you love Uptime Kuma's UI/UX, you will love this one too
 
-![](https://github.com/louislam/dockge/assets/1336778/89fc1023-b069-42c0-a01c-918c495f1a6a)
+![](https://github.com/mayi/dockge/assets/1336778/89fc1023-b069-42c0-a01c-918c495f1a6a)
 
 ## 🔧 How to Install
 
@@ -58,7 +58,7 @@ mkdir -p /opt/stacks /opt/dockge
 cd /opt/dockge
 
 # Download the compose.yaml
-curl https://raw.githubusercontent.com/louislam/dockge/master/compose.yaml --output compose.yaml
+curl https://raw.githubusercontent.com/mayi/dockge/master/compose.yaml --output compose.yaml
 
 # Start the server
 docker compose up -d
@@ -71,18 +71,15 @@ Dockge is now running on http://localhost:5001
 
 ### Advanced
 
-If you want to store your stacks in another directory, you can generate your compose.yaml file by using the following URL with custom query strings.
+If you want to store your stacks in another directory, you can customize the `compose.yaml` file directly. Download it from the repository and modify the port and stacks path as needed:
 
 ```
-# Download your compose.yaml
-curl "https://dockge.kuma.pet/compose.yaml?port=5001&stacksPath=/opt/stacks" --output compose.yaml
+# Download the compose.yaml and customize it
+curl https://raw.githubusercontent.com/mayi/dockge/master/compose.yaml --output compose.yaml
 ```
 
 - port=`5001`
 - stacksPath=`/opt/stacks`
-
-Interactive compose.yaml generator is available on: 
-https://dockge.kuma.pet
 
 ## How to Update
 
@@ -93,14 +90,14 @@ docker compose pull && docker compose up -d
 
 ## Screenshots
 
-![](https://github.com/louislam/dockge/assets/1336778/e7ff0222-af2e-405c-b533-4eab04791b40)
+![](https://github.com/mayi/dockge/assets/1336778/e7ff0222-af2e-405c-b533-4eab04791b40)
 
 
-![](https://github.com/louislam/dockge/assets/1336778/7139e88c-77ed-4d45-96e3-00b66d36d871)
+![](https://github.com/mayi/dockge/assets/1336778/7139e88c-77ed-4d45-96e3-00b66d36d871)
 
-![](https://github.com/louislam/dockge/assets/1336778/f019944c-0e87-405b-a1b8-625b35de1eeb)
+![](https://github.com/mayi/dockge/assets/1336778/f019944c-0e87-405b-a1b8-625b35de1eeb)
 
-![](https://github.com/louislam/dockge/assets/1336778/a4478d23-b1c4-4991-8768-1a7cad3472e3)
+![](https://github.com/mayi/dockge/assets/1336778/a4478d23-b1c4-4991-8768-1a7cad3472e3)
 
 
 ## Motivations
@@ -114,17 +111,17 @@ If you love this project, please consider giving it a ⭐.
 ## 🗣️ Community and Contribution
 
 ### Bug Report
-https://github.com/louislam/dockge/issues
+https://github.com/mayi/dockge/issues
 
 ### Ask for Help / Discussions
-https://github.com/louislam/dockge/discussions
+https://github.com/mayi/dockge/discussions
 
 ### Translation
-If you want to translate Dockge into your language, please read [Translation Guide](https://github.com/louislam/dockge/blob/master/frontend/src/lang/README.md)
+If you want to translate Dockge into your language, please read [Translation Guide](https://github.com/mayi/dockge/blob/master/frontend/src/lang/README.md)
 
 ### Create a Pull Request
 
-Be sure to read the [guide](https://github.com/louislam/dockge/blob/master/CONTRIBUTING.md), as we don't accept all types of pull requests and don't want to waste your time.
+Be sure to read the [guide](https://github.com/mayi/dockge/blob/master/CONTRIBUTING.md), as we don't accept all types of pull requests and don't want to waste your time.
 
 ## FAQ
 
