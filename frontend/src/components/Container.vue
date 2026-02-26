@@ -1,5 +1,5 @@
 <template>
-    <div class="shadow-box big-padding mb-3 container">
+    <div :class="isEditMode ? 'shadow-box big-padding mb-3 container' : 'container-item'">
         <div class="row">
             <div class="col-12 col-sm-7">
                 <h4>{{ name }}</h4>
@@ -17,6 +17,21 @@
                     <a v-for="port in (ports ?? envsubstService.ports)" :key="port" :href="parsePort(port).url" target="_blank">
                         <span class="badge me-1 bg-secondary">{{ parsePort(port).display }}</span>
                     </a>
+                </div>
+                <!-- Extra info in view mode -->
+                <div v-if="!isEditMode" class="container-meta mt-2">
+                    <span v-if="service.restart" class="meta-item" :title="$t('restartPolicy')">
+                        <font-awesome-icon icon="rotate" class="me-1" />{{ service.restart }}
+                    </span>
+                    <span v-if="service.volumes && service.volumes.length" class="meta-item" :title="$tc('volume', 2)">
+                        <font-awesome-icon icon="copy" class="me-1" />{{ service.volumes.length }} {{ $tc('volume', service.volumes.length) }}
+                    </span>
+                    <span v-if="service.environment && envCount > 0" class="meta-item" :title="$tc('environmentVariable', 2)">
+                        <font-awesome-icon icon="wrench" class="me-1" />{{ envCount }} {{ $tc('environmentVariable', envCount) }}
+                    </span>
+                    <span v-if="service.networks && service.networks.length" class="meta-item" :title="$tc('network', 2)">
+                        <font-awesome-icon icon="link" class="me-1" />{{ service.networks.length }} {{ $tc('network', service.networks.length) }}
+                    </span>
                 </div>
             </div>
             <div class="col-12 col-sm-5 mt-2 mt-sm-0">
@@ -198,6 +213,16 @@ export default defineComponent({
     },
     computed: {
 
+        envCount() {
+            const env = this.service.environment;
+            if (Array.isArray(env)) {
+                return env.length;
+            } else if (env && typeof env === "object") {
+                return Object.keys(env).length;
+            }
+            return 0;
+        },
+
         splitImageTag() {
             return localStorage.getItem("imageTagSplit") === "true";
         },
@@ -348,6 +373,37 @@ export default defineComponent({
 
 <style scoped lang="scss">
 @import "../styles/vars";
+
+.container-item {
+    padding: 12px 0;
+    border-bottom: 1px solid rgba(0, 0, 0, 0.08);
+
+    .dark & {
+        border-bottom-color: rgba(255, 255, 255, 0.1);
+    }
+
+    &:last-child {
+        border-bottom: none;
+        padding-bottom: 0;
+    }
+
+    &:first-child {
+        padding-top: 0;
+    }
+}
+
+.container-meta {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 12px;
+    font-size: 0.78rem;
+    color: #6c757d;
+
+    .meta-item {
+        display: inline-flex;
+        align-items: center;
+    }
+}
 
 .container {
     .image {

@@ -60,6 +60,18 @@
                         <font-awesome-icon icon="file" class="me-1" /> <span class="d-none d-xl-inline">{{ $t("backupStack") }}</span>
                     </button>
 
+                    <!-- Separator -->
+                    <div class="vr mx-1"></div>
+
+                    <button class="btn btn-outline-secondary" :disabled="processing" @click="enableEditMode">
+                        <font-awesome-icon icon="pen" class="me-1" /> <span class="d-none d-xl-inline">{{ $t("editStack") }}</span>
+                    </button>
+
+                    <button class="btn btn-outline-secondary" @click="showCompose = !showCompose">
+                        <font-awesome-icon :icon="showCompose ? 'eye-slash' : 'eye'" class="me-1" />
+                        <span class="d-none d-xl-inline">{{ stack.composeFileName }}</span>
+                    </button>
+
                 </div>
             </div>
 
@@ -88,7 +100,7 @@
             </transition>
 
             <div v-if="stack.isManagedByDockge" class="row">
-                <div class="col-12 col-lg-6">
+                <div :class="showCompose || isEditMode ? 'col-12 col-lg-6' : 'col-12'">
                     <!-- General -->
                     <div v-if="isAdd">
                         <h4 class="mb-3">{{ $t("general") }}</h4>
@@ -132,7 +144,7 @@
                         </div>
                     </div>
 
-                    <div ref="containerList">
+                    <div ref="containerList" class="shadow-box big-padding mb-3">
                         <Container
                             v-for="(service, name) in jsonConfig.services"
                             :key="name"
@@ -143,6 +155,14 @@
                             :ports="serviceStatusList[name]?.ports"
                         />
                     </div>
+
+                    <!-- Container Resource Stats -->
+                    <ContainerStats
+                        v-if="!isEditMode && !isAdd"
+                        :stack-name="stack.name"
+                        :endpoint="endpoint"
+                        :active="active"
+                    />
 
                     <!-- General -->
                     <div v-if="isEditMode">
@@ -174,12 +194,9 @@
                         </div>
                     </div>
                 </div>
-                <div class="col-12 col-lg-6">
+                <div v-if="showCompose || isEditMode" class="col-12 col-lg-6">
                     <div class="d-flex justify-content-between align-items-center mb-3" style="min-height: 40px;">
                         <h4 class="mb-0">{{ stack.composeFileName }}</h4>
-                        <button v-if="!isEditMode" class="btn btn-secondary" :disabled="processing" @click="enableEditMode">
-                            <font-awesome-icon icon="pen" class="me-1" /> {{ $t("editStack") }}
-                        </button>
                     </div>
 
                     <!-- YAML editor -->
@@ -299,6 +316,7 @@ import {
 import { BModal } from "bootstrap-vue-next";
 import NetworkInput from "../components/NetworkInput.vue";
 import Confirm from "../components/Confirm.vue";
+import ContainerStats from "../components/ContainerStats.vue";
 import dotenv from "dotenv";
 import { ref } from "vue";
 
@@ -323,6 +341,7 @@ export default {
         CodeMirror,
         BModal,
         Confirm,
+        ContainerStats,
     },
     beforeRouteUpdate(to, from, next) {
         this.exitConfirm(next);
@@ -372,6 +391,7 @@ export default {
             },
             serviceStatusList: {},
             isEditMode: false,
+            showCompose: true,
             submitted: false,
             showDeleteDialog: false,
             newContainerName: "",
@@ -807,6 +827,7 @@ export default {
 
         enableEditMode() {
             this.isEditMode = true;
+            this.showCompose = true;
         },
 
         checkYAML() {

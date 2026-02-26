@@ -146,5 +146,14 @@
     "imageName": "Image Name",
     "imageTag": "Tag / Version",
     "collapseSidebar": "Collapse Sidebar",
-    "expandSidebar": "Expand Sidebar"
+    "expandSidebar": "Expand Sidebar",
+    "hide": "Hide",
+    "show": "Show",
+    "containerStats": "Resource Monitor",
+    "cpuUsage": "CPU Usage",
+    "memoryUsage": "Memory Usage",
+    "memory": "Memory",
+    "networkIO": "Network I/O",
+    "blockIO": "Block I/O",
+    "refreshEvery": "Refresh: {0}s"
 }

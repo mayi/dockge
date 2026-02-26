@@ -524,6 +524,91 @@ export class Stack {
         terminal.start();
     }
 
+    async getContainerStats() {
+        let statsList = new Map<string, object>();
+
+        try {
+            // Get container IDs via compose ps
+            let psRes = await childProcessAsync.spawn("docker", this.getComposeOptions("ps", "--format", "json"), {
+                cwd: this.path,
+                encoding: "utf-8",
+            });
+
+            if (!psRes.stdout) {
+                return statsList;
+            }
+
+            let containerIds : string[] = [];
+            let serviceMap = new Map<string, string>(); // containerId -> serviceName
+            let lines = psRes.stdout.toString().split("\n");
+            for (let line of lines) {
+                try {
+                    let obj = JSON.parse(line);
+                    if (obj.ID && obj.Service) {
+                        containerIds.push(obj.ID);
+                        serviceMap.set(obj.ID, obj.Service);
+                    }
+                } catch (e) {
+                    // skip invalid lines
+                }
+            }
+
+            if (containerIds.length === 0) {
+                return statsList;
+            }
+
+            // Get stats for all containers in one call
+            let statsRes = await childProcessAsync.spawn("docker", [
+                "stats", "--no-stream", "--format",
+                "{{.ID}}\t{{.CPUPerc}}\t{{.MemUsage}}\t{{.MemPerc}}\t{{.NetIO}}\t{{.BlockIO}}",
+                ...containerIds
+            ], {
+                encoding: "utf-8",
+            });
+
+            if (!statsRes.stdout) {
+                return statsList;
+            }
+
+            let statsLines = statsRes.stdout.toString().split("\n");
+            for (let line of statsLines) {
+                try {
+                    let parts = line.split("\t");
+                    if (parts.length < 6) {
+                        continue;
+                    }
+                    let id = parts[0].trim();
+                    let serviceName = serviceMap.get(id);
+                    if (!serviceName) {
+                        // Try prefix match (docker stats may return short IDs)
+                        for (let [fullId, name] of serviceMap) {
+                            if (fullId.startsWith(id) || id.startsWith(fullId.substring(0, 12))) {
+                                serviceName = name;
+                                break;
+                            }
+                        }
+                    }
+                    if (serviceName) {
+                        statsList.set(serviceName, {
+                            cpuPercent: parseFloat(parts[1].replace("%", "")) || 0,
+                            memUsage: parts[2].trim(),
+                            memPercent: parseFloat(parts[3].replace("%", "")) || 0,
+                            netIO: parts[4].trim(),
+                            blockIO: parts[5].trim(),
+                        });
+                    }
+                } catch (e) {
+                    // skip invalid lines
+                }
+            }
+
+            return statsList;
+        } catch (e) {
+            log.error("getContainerStats", e);
+            return statsList;
+        }
+    }
+
     async getServiceStatusList() {
         let statusList = new Map<string, { state: string, ports: string[] }>();
 
