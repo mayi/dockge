@@ -6,6 +6,7 @@ data
 stacks
 tmp
 /private
+/screenshots
 
 # Docker extra
 docker

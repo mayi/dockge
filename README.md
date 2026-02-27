@@ -90,14 +90,15 @@ docker compose pull && docker compose up -d
 
 ## Screenshots
 
-![](https://github.com/mayi/dockge/assets/1336778/e7ff0222-af2e-405c-b533-4eab04791b40)
+![](screenshots/dashboard.png)
 
+![](screenshots/stack.png)
 
-![](https://github.com/mayi/dockge/assets/1336778/7139e88c-77ed-4d45-96e3-00b66d36d871)
+![](screenshots/stack-2.png)
 
-![](https://github.com/mayi/dockge/assets/1336778/f019944c-0e87-405b-a1b8-625b35de1eeb)
+![](screenshots/edit.png)
 
-![](https://github.com/mayi/dockge/assets/1336778/a4478d23-b1c4-4991-8768-1a7cad3472e3)
+![](screenshots/setting.png)
 
 
 ## Motivations
