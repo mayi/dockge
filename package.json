@@ -22,6 +22,11 @@
         "build:healthcheck": "docker buildx build -f docker/BuildHealthCheck.Dockerfile --platform linux/amd64,linux/arm64,linux/arm/v7 -t madcat1983/dockge:build-healthcheck . --push",
         "release-nightly": "npm run build:frontend && docker buildx build --platform linux/amd64,linux/arm64,linux/arm/v7 -t madcat1983/dockge:nightly -t ghcr.io/mayi/dockge:nightly --target nightly -f ./docker/Dockerfile . --push",
         "start-docker": "docker run --rm -p 5001:5001 --name dockge madcat1983/dockge:latest",
+        "podman:build-base": "podman build -t docker.io/madcat1983/dockge:base -f ./docker/Base.Dockerfile . && podman push docker.io/madcat1983/dockge:base",
+        "podman:build-healthcheck": "podman build -t docker.io/madcat1983/dockge:build-healthcheck -f ./docker/BuildHealthCheck.Dockerfile . && podman push docker.io/madcat1983/dockge:build-healthcheck",
+        "podman:build": "npm run build:frontend && podman build --target release -t docker.io/madcat1983/dockge:latest -f ./docker/Dockerfile . && podman tag docker.io/madcat1983/dockge:latest docker.io/madcat1983/dockge:1 && podman push docker.io/madcat1983/dockge:latest && podman push docker.io/madcat1983/dockge:1",
+        "podman:build-nightly": "npm run build:frontend && podman build --target nightly -t docker.io/madcat1983/dockge:nightly -f ./docker/Dockerfile . && podman push docker.io/madcat1983/dockge:nightly",
+        "podman:start": "podman run --rm -p 5001:5001 --name dockge docker.io/madcat1983/dockge:latest",
         "mark-as-nightly": "tsx ./extra/mark-as-nightly.ts",
         "reformat-changelog": "tsx ./extra/reformat-changelog.ts",
         "reset-password": "tsx ./extra/reset-password.ts"
