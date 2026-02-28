@@ -67,6 +67,30 @@
                             </li>
 
                             <li>
+                                <router-link to="/networks" class="dropdown-item">
+                                    <font-awesome-icon icon="network-wired" /> {{ $t("networks") }}
+                                </router-link>
+                            </li>
+
+                            <li>
+                                <router-link to="/images" class="dropdown-item">
+                                    <font-awesome-icon icon="box" /> {{ $t("images") }}
+                                </router-link>
+                            </li>
+
+                            <li>
+                                <router-link to="/templates" class="dropdown-item">
+                                    <font-awesome-icon icon="file-code" /> {{ $t("templates") }}
+                                </router-link>
+                            </li>
+
+                            <li>
+                                <router-link to="/audit-log" class="dropdown-item">
+                                    <font-awesome-icon icon="clock-rotate-left" /> {{ $t("auditLog") }}
+                                </router-link>
+                            </li>
+
+                            <li>
                                 <router-link to="/settings/general" class="dropdown-item" :class="{ active: $route.path.includes('settings') }">
                                     <font-awesome-icon icon="cog" /> {{ $t("Settings") }}
                                 </router-link>

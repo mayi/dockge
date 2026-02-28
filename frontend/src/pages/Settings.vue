@@ -83,6 +83,9 @@ export default {
                 security: {
                     title: this.$t("Security"),
                 },
+                sessions: {
+                    title: this.$t("sessions"),
+                },
                 globalEnv: {
                     title: this.$t("GlobalEnv"),
                 },

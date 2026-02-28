@@ -36,6 +36,8 @@ import { AgentProxySocketHandler } from "./socket-handlers/agent-proxy-socket-ha
 import { AgentSocketHandler } from "./agent-socket-handler";
 import { AgentSocket } from "../common/agent-socket";
 import { ManageAgentSocketHandler } from "./socket-handlers/manage-agent-socket-handler";
+import { AuditLogSocketHandler } from "./socket-handlers/audit-log-socket-handler";
+import { TemplateSocketHandler } from "./socket-handlers/template-socket-handler";
 import { Terminal } from "./terminal";
 
 export class DockgeServer {
@@ -59,6 +61,8 @@ export class DockgeServer {
     socketHandlerList: SocketHandler[] = [
         new MainSocketHandler(),
         new ManageAgentSocketHandler(),
+        new AuditLogSocketHandler(),
+        new TemplateSocketHandler(),
     ];
 
     agentProxySocketHandler = new AgentProxySocketHandler();
@@ -635,6 +639,52 @@ export class DockgeServer {
         });
 
         return list;
+    }
+
+    async getDockerNetworkDetails(name: string): Promise<object> {
+        const res = await childProcessAsync.spawn("docker", ["network", "inspect", name, "--format", "json"], {
+            encoding: "utf-8",
+        });
+
+        if (!res.stdout) {
+            throw new Error("Failed to inspect network");
+        }
+
+        const data = JSON.parse(res.stdout.toString());
+        if (Array.isArray(data) && data.length > 0) {
+            return data[0];
+        }
+        return data;
+    }
+
+    async createDockerNetwork(name: string, driver?: string, subnet?: string): Promise<void> {
+        if (!name.match(/^[a-zA-Z0-9][a-zA-Z0-9_.-]+$/)) {
+            throw new Error("Invalid network name");
+        }
+
+        const args = ["network", "create"];
+        if (driver) {
+            args.push("--driver", driver);
+        }
+        if (subnet) {
+            args.push("--subnet", subnet);
+        }
+        args.push(name);
+
+        await childProcessAsync.spawn("docker", args, {
+            encoding: "utf-8",
+        });
+    }
+
+    async removeDockerNetwork(name: string): Promise<void> {
+        const protectedNetworks = ["bridge", "host", "none"];
+        if (protectedNetworks.includes(name)) {
+            throw new Error("Cannot remove default Docker network");
+        }
+
+        await childProcessAsync.spawn("docker", ["network", "rm", name], {
+            encoding: "utf-8",
+        });
     }
 
     get stackDirFullPath() {

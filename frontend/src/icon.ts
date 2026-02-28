@@ -55,6 +55,11 @@ import {
     faRotate,
     faArrowsRotate, faAnglesLeft, faAnglesRight,
     faArrowDown, faCloudArrowDown,
+    faNetworkWired, faBox, faFileCode, faClockRotateLeft,
+    faBroom, faChevronLeft, faChevronRight,
+    faRightFromBracket, faXmark, faDesktop, faMobileScreen, faTabletScreenButton,
+    faGlobe, faDatabase, faBlog, faCodeBranch, faCubes,
+    faEllipsis,
 } from "@fortawesome/free-solid-svg-icons";
 
 library.add(
@@ -114,6 +119,24 @@ library.add(
     faAnglesLeft,
     faAnglesRight,
     faArrowDown,
+    faNetworkWired,
+    faBox,
+    faFileCode,
+    faClockRotateLeft,
+    faBroom,
+    faChevronLeft,
+    faChevronRight,
+    faRightFromBracket,
+    faXmark,
+    faDesktop,
+    faMobileScreen,
+    faTabletScreenButton,
+    faGlobe,
+    faDatabase,
+    faBlog,
+    faCodeBranch,
+    faCubes,
+    faEllipsis,
 );
 
 export { FontAwesomeIcon };

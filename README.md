@@ -28,6 +28,27 @@ A fancy, easy-to-use and reactive self-hosted docker compose.yaml stack-oriented
 - 🚄 Reactive - Everything is just responsive. Progress (Pull/Up/Down) and terminal output are in real-time
 - 🐣 Easy-to-use & fancy UI - If you love Uptime Kuma's UI/UX, you will love this one too
 
+### Fork Enhancements
+
+This fork introduces the following improvements over the original Dockge:
+
+#### Security
+- 🔒 **Login Rate Limiting** - Per-IP and global rate limiting on login attempts to prevent brute-force attacks
+- 🔑 **Password Strength Requirements** - Enforced minimum password complexity (length, uppercase, lowercase, numbers)
+- 🛡️ **Session Management** - Server-side session tracking with the ability to view active sessions and revoke them from Settings
+- ✅ **Input Validation Hardening** - Strict validation on all user inputs (stack names, network names, image IDs, etc.)
+- 📋 **Audit Log** - Tracks all significant operations (deploy, delete, login, settings changes) with user, IP, and timestamp
+
+#### Feature Enhancements
+- 📦 **Stack Templates** - Built-in templates (Nginx, PostgreSQL, MySQL, Redis, MariaDB, MongoDB, Traefik, WordPress, Gitea, Portainer) and custom user-defined templates for quick stack creation
+- 🌐 **Docker Network Management** - List, create, and remove Docker networks directly from the UI
+- 🖼️ **Image Management** - List, remove, and prune Docker images with size overview
+- 📥 **Container Log Export** - Download stack logs as text files via REST API
+
+#### UI/UX
+- 📱 **Responsive Layout** - Mobile-optimized bottom navigation with "More" menu, tablet-adapted breakpoints, touch-friendly controls
+- ✔️ **Standardized Confirm Dialogs** - Consistent confirmation dialogs across all destructive operations
+
 ![](https://github.com/mayi/dockge/assets/1336778/89fc1023-b069-42c0-a01c-918c495f1a6a)
 
 ## 🔧 How to Install
@@ -100,6 +121,18 @@ docker compose pull && docker compose up -d
 
 ![](screenshots/setting.png)
 
+### Template
+![](screenshots/template-1.png)
+
+![](screenshots/template-2.png)
+
+![](screenshots/template-3.png)
+
+### Image
+![](screenshots/images.png)
+
+### Network
+![](screenshots/network.png)
 
 ## Motivations
 
@@ -147,11 +180,9 @@ Yes, you can. However, you need to move your compose file into the stacks direct
 
 #### Is Dockge a Portainer replacement?
 
-Yes or no. Portainer provides a lot of Docker features. While Dockge is currently only focusing on docker-compose with a better user interface and better user experience.
+It depends on your needs. Portainer provides a broader set of Docker features, while Dockge focuses on docker-compose stack management with a better user interface and experience.
 
-If you want to manage your container with docker-compose only, the answer may be yes.
-
-If you still need to manage something like docker networks, single containers, the answer may be no.
+This fork adds Docker network management, image management, and other features that narrow the gap. If your workflow is primarily docker-compose based, Dockge may be all you need.
 
 #### Can I install both Dockge and Portainer?
 

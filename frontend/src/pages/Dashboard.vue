@@ -35,11 +35,40 @@
                 <font-awesome-icon icon="terminal" />
                 <span>{{ $t("console") }}</span>
             </router-link>
-            <router-link to="/settings/general" class="mobile-nav-item" active-class="active">
-                <font-awesome-icon icon="cog" />
-                <span>{{ $t("Settings") }}</span>
-            </router-link>
+            <a class="mobile-nav-item" :class="{ active: showMoreMenu }" @click.prevent="showMoreMenu = !showMoreMenu">
+                <font-awesome-icon icon="ellipsis" />
+                <span>{{ $t("more") }}</span>
+            </a>
         </div>
+
+        <!-- More menu slide-up panel -->
+        <transition name="slide-up">
+            <div v-if="showMoreMenu && $root.isMobile" class="more-menu-overlay" @click.self="showMoreMenu = false">
+                <div class="more-menu-panel">
+                    <div class="more-menu-handle" @click="showMoreMenu = false"></div>
+                    <router-link to="/networks" class="more-menu-item" @click="showMoreMenu = false">
+                        <font-awesome-icon icon="network-wired" class="more-menu-icon" />
+                        <span>{{ $t("networks") }}</span>
+                    </router-link>
+                    <router-link to="/images" class="more-menu-item" @click="showMoreMenu = false">
+                        <font-awesome-icon icon="box" class="more-menu-icon" />
+                        <span>{{ $t("images") }}</span>
+                    </router-link>
+                    <router-link to="/templates" class="more-menu-item" @click="showMoreMenu = false">
+                        <font-awesome-icon icon="file-code" class="more-menu-icon" />
+                        <span>{{ $t("templates") }}</span>
+                    </router-link>
+                    <router-link to="/audit-log" class="more-menu-item" @click="showMoreMenu = false">
+                        <font-awesome-icon icon="clock-rotate-left" class="more-menu-icon" />
+                        <span>{{ $t("auditLog") }}</span>
+                    </router-link>
+                    <router-link to="/settings/general" class="more-menu-item" @click="showMoreMenu = false">
+                        <font-awesome-icon icon="cog" class="more-menu-icon" />
+                        <span>{{ $t("Settings") }}</span>
+                    </router-link>
+                </div>
+            </div>
+        </transition>
     </div>
 </template>
 
@@ -55,6 +84,7 @@ export default {
         return {
             height: 0,
             sidebarCollapsed: localStorage.getItem("sidebarCollapsed") === "true",
+            showMoreMenu: false,
         };
     },
     computed: {
@@ -74,6 +104,11 @@ export default {
             return {
                 "margin-bottom": "1rem",
             };
+        },
+    },
+    watch: {
+        "$route"() {
+            this.showMoreMenu = false;
         },
     },
     mounted() {
@@ -216,5 +251,86 @@ export default {
 .slide-sidebar-leave-to {
     transform: translateX(-100%);
     opacity: 0;
+}
+
+// More menu overlay & panel
+.more-menu-overlay {
+    position: fixed;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    z-index: 999;
+    background: rgba(0, 0, 0, 0.4);
+}
+
+.more-menu-panel {
+    position: fixed;
+    bottom: 0;
+    left: 0;
+    right: 0;
+    background: #F3EDF7;
+    border-radius: 16px 16px 0 0;
+    padding: 8px 0 calc(80px + env(safe-area-inset-bottom));
+    box-shadow: 0 -4px 12px rgba(0, 0, 0, 0.15);
+
+    .dark & {
+        background: #2B2930;
+        box-shadow: 0 -4px 12px rgba(0, 0, 0, 0.5);
+    }
+}
+
+.more-menu-handle {
+    width: 40px;
+    height: 4px;
+    background: rgba(128, 128, 128, 0.3);
+    border-radius: 2px;
+    margin: 4px auto 12px;
+    cursor: pointer;
+}
+
+.more-menu-item {
+    display: flex;
+    align-items: center;
+    gap: 14px;
+    padding: 14px 24px;
+    text-decoration: none;
+    color: #49454F;
+    font-size: 15px;
+    font-weight: 500;
+    transition: background-color 0.15s;
+
+    &:hover, &:active {
+        background: rgba(0, 0, 0, 0.05);
+    }
+
+    .dark & {
+        color: #CAC4D0;
+
+        &:hover, &:active {
+            background: rgba(255, 255, 255, 0.05);
+        }
+    }
+}
+
+.more-menu-icon {
+    width: 24px;
+    text-align: center;
+    font-size: 18px;
+}
+
+// Slide-up transition
+.slide-up-enter-active,
+.slide-up-leave-active {
+    transition: all 0.25s cubic-bezier(0.2, 0, 0, 1);
+}
+
+.slide-up-enter-from,
+.slide-up-leave-to {
+    opacity: 0;
+
+    .more-menu-panel {
+        transform: translateY(100%);
+    }
 }
 </style>

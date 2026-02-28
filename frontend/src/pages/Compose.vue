@@ -21,7 +21,7 @@
                         </button>
                     </template>
                     <template v-else>
-                        <button class="btn btn-danger" :disabled="processing" @click="showDeleteDialog = !showDeleteDialog">
+                        <button class="btn btn-danger" :disabled="processing" @click="$refs.confirmDelete.show()">
                             <font-awesome-icon icon="trash" class="me-1" /> {{ $t("deleteStack") }}
                         </button>
                     </template>
@@ -29,7 +29,7 @@
             </div>
 
             <div v-if="stack.isManagedByDockge && !isEditMode" class="mb-4">
-                <div class="action-bar d-flex flex-wrap gap-3 align-items-center">
+                <div class="action-bar d-flex flex-wrap gap-3 align-items-center" style="overflow-x: auto;">
                     
                     <!-- 1. Primary Actions (State/Edit) -->
                     <div v-if="!active" class="d-flex flex-wrap gap-2 align-items-center">
@@ -43,33 +43,33 @@
                     <!-- 2. Lifecycle Operations (Segmented Group) -->
                     <div v-if="active" class="btn-group shadow-sm" role="group" aria-label="Lifecycle Actions">
                         <button class="btn btn-outline-secondary" :disabled="processing" @click="confirmRestart" title="Restart">
-                            <font-awesome-icon icon="rotate" class="me-1" /> <span class="d-none d-xl-inline">{{ $t("restartStack") }}</span>
+                            <font-awesome-icon icon="rotate" class="me-1" /> <span class="d-none d-md-inline">{{ $t("restartStack") }}</span>
                         </button>
                         <button class="btn btn-outline-secondary" :disabled="processing" @click="confirmUpdate" title="Update">
-                            <font-awesome-icon icon="cloud-arrow-down" class="me-1" /> <span class="d-none d-xl-inline">{{ $t("updateStack") }}</span>
+                            <font-awesome-icon icon="cloud-arrow-down" class="me-1" /> <span class="d-none d-md-inline">{{ $t("updateStack") }}</span>
                         </button>
                         <button class="btn btn-outline-secondary" :disabled="processing" @click="confirmStop" title="Stop">
-                            <font-awesome-icon icon="stop" class="me-1" /> <span class="d-none d-xl-inline">{{ $t("stopStack") }}</span>
+                            <font-awesome-icon icon="stop" class="me-1" /> <span class="d-none d-md-inline">{{ $t("stopStack") }}</span>
                         </button>
                         <button class="btn btn-outline-secondary" :disabled="processing" @click="confirmDown" title="Down">
-                            <font-awesome-icon icon="arrow-down" class="me-1" /> <span class="d-none d-xl-inline">{{ $t("downStack") }}</span>
+                            <font-awesome-icon icon="arrow-down" class="me-1" /> <span class="d-none d-md-inline">{{ $t("downStack") }}</span>
                         </button>
                     </div>
 
                     <button v-if="!isAdd && endpoint === ''" class="btn btn-outline-secondary" :disabled="processing" @click="backupStack">
-                        <font-awesome-icon icon="file" class="me-1" /> <span class="d-none d-xl-inline">{{ $t("backupStack") }}</span>
+                        <font-awesome-icon icon="file" class="me-1" /> <span class="d-none d-md-inline">{{ $t("backupStack") }}</span>
                     </button>
 
                     <!-- Separator -->
                     <div class="vr mx-1"></div>
 
                     <button class="btn btn-outline-secondary" :disabled="processing" @click="enableEditMode">
-                        <font-awesome-icon icon="pen" class="me-1" /> <span class="d-none d-xl-inline">{{ $t("editStack") }}</span>
+                        <font-awesome-icon icon="pen" class="me-1" /> <span class="d-none d-md-inline">{{ $t("editStack") }}</span>
                     </button>
 
                     <button class="btn btn-outline-secondary" @click="showCompose = !showCompose">
                         <font-awesome-icon :icon="showCompose ? 'eye-slash' : 'eye'" class="me-1" />
-                        <span class="d-none d-xl-inline">{{ stack.composeFileName }}</span>
+                        <span class="d-none d-md-inline">{{ stack.composeFileName }}</span>
                     </button>
 
                 </div>
@@ -268,9 +268,9 @@
             </div>
 
             <!-- Delete Dialog -->
-            <BModal v-model="showDeleteDialog" :cancelTitle="$t('cancel')" :okTitle="$t('deleteStack')" okVariant="danger" @ok="deleteDialog">
+            <Confirm ref="confirmDelete" btnStyle="btn-danger" :yesText="$t('deleteStack')" :noText="$t('cancel')" @yes="deleteDialog">
                 {{ $t("deleteStackMsg") }}
-            </BModal>
+            </Confirm>
 
             <!-- Confirm Restart -->
             <Confirm ref="confirmRestart" btnStyle="btn-warning" :yesText="$t('restartStack')" :noText="$t('cancel')" @yes="restartStack">
@@ -290,6 +290,11 @@
             <!-- Confirm Down -->
             <Confirm ref="confirmDown" btnStyle="btn-warning" :yesText="$t('downStack')" :noText="$t('cancel')" @yes="downStack">
                 {{ $t("confirmDownMsg") }}
+            </Confirm>
+
+            <!-- Confirm Leave -->
+            <Confirm ref="confirmLeave" btnStyle="btn-warning" :yesText="$t('Leave')" :noText="$t('cancel')" @yes="confirmLeaveYes" @no="confirmLeaveNo">
+                {{ $t("confirmLeaveStack") }}
             </Confirm>
         </div>
     </transition>
@@ -313,7 +318,6 @@ import {
     PROGRESS_TERMINAL_ROWS,
     RUNNING
 } from "../../../common/util-common";
-import { BModal } from "bootstrap-vue-next";
 import NetworkInput from "../components/NetworkInput.vue";
 import Confirm from "../components/Confirm.vue";
 import ContainerStats from "../components/ContainerStats.vue";
@@ -339,7 +343,6 @@ export default {
         NetworkInput,
         FontAwesomeIcon,
         CodeMirror,
-        BModal,
         Confirm,
         ContainerStats,
     },
@@ -393,7 +396,6 @@ export default {
             isEditMode: false,
             showCompose: true,
             submitted: false,
-            showDeleteDialog: false,
             newContainerName: "",
             stopServiceStatusTimeout: false,
         };
@@ -556,6 +558,18 @@ export default {
 
             this.yamlCodeChange();
 
+            // Load template if templateId is provided
+            const templateId = this.$route.query.templateId;
+            if (templateId) {
+                this.$root.getSocket().emit("getTemplate", templateId, (res) => {
+                    if (res.ok && res.template) {
+                        this.stack.composeYAML = res.template.composeYAML || template;
+                        this.stack.composeENV = res.template.composeENV || envDefault;
+                        this.yamlCodeChange();
+                    }
+                });
+            }
+
         } else {
             this.stack.name = this.$route.params.stackName;
             this.loadStack();
@@ -595,15 +609,26 @@ export default {
 
         exitConfirm(next) {
             if (this.isEditMode) {
-                if (confirm(this.$t("confirmLeaveStack"))) {
-                    this.exitAction();
-                    next();
-                } else {
-                    next(false);
-                }
+                this._leaveNext = next;
+                this.$refs.confirmLeave.show();
             } else {
                 this.exitAction();
                 next();
+            }
+        },
+
+        confirmLeaveYes() {
+            this.exitAction();
+            if (this._leaveNext) {
+                this._leaveNext();
+                this._leaveNext = null;
+            }
+        },
+
+        confirmLeaveNo() {
+            if (this._leaveNext) {
+                this._leaveNext(false);
+                this._leaveNext = null;
             }
         },
 

@@ -122,16 +122,48 @@ export class Stack {
             throw new ValidationError("Stack name must be 100 characters or fewer");
         }
 
-        // Check YAML format
-        yaml.parse(this.composeYAML);
+        // Check YAML format and structure
+        const parsed = yaml.parse(this.composeYAML);
 
+        if (parsed && typeof parsed === "object") {
+            // Validate 'services' key is a mapping if present
+            if (parsed.services !== undefined && (typeof parsed.services !== "object" || parsed.services === null)) {
+                throw new ValidationError("'services' must be a mapping");
+            }
+
+            // Check for shell injection characters in image names
+            if (parsed.services && typeof parsed.services === "object") {
+                for (const [serviceName, service] of Object.entries(parsed.services)) {
+                    if (service && typeof service === "object") {
+                        const svc = service as Record<string, unknown>;
+                        if (svc.image && typeof svc.image === "string") {
+                            if (/[;&|`$]/.test(svc.image)) {
+                                throw new ValidationError(`Invalid characters in image name for service '${serviceName}'`);
+                            }
+                        }
+                    }
+                }
+            }
+        }
+
+        // Validate .env format
         let lines = this.composeENV.split("\n");
 
-        // Check if the .env is able to pass docker-compose
-        // Prevent "setenv: The parameter is incorrect"
-        // It only happens when there is one line and it doesn't contain "="
-        if (lines.length === 1 && !lines[0].includes("=") && lines[0].length > 0) {
-            throw new ValidationError("Invalid .env format");
+        for (const line of lines) {
+            const trimmed = line.trim();
+            // Skip empty lines and comments
+            if (trimmed === "" || trimmed.startsWith("#")) {
+                continue;
+            }
+            // Each non-empty, non-comment line must contain '='
+            if (!trimmed.includes("=")) {
+                throw new ValidationError(`Invalid .env line: must contain '='`);
+            }
+            // Validate variable name
+            const key = trimmed.split("=")[0].trim();
+            if (!/^[a-zA-Z_][a-zA-Z0-9_]*$/.test(key)) {
+                throw new ValidationError(`Invalid .env variable name: "${key}"`);
+            }
         }
     }
 

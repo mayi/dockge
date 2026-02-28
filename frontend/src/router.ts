@@ -15,7 +15,13 @@ import Appearance from "./components/settings/Appearance.vue";
 import General from "./components/settings/General.vue";
 const Security = () => import("./components/settings/Security.vue");
 const GlobalEnv = () => import("./components/settings/GlobalEnv.vue");
+const Sessions = () => import("./components/settings/Sessions.vue");
 import About from "./components/settings/About.vue";
+
+const AuditLog = () => import("./pages/AuditLog.vue");
+const Networks = () => import("./pages/Networks.vue");
+const Images = () => import("./pages/Images.vue");
+const Templates = () => import("./pages/Templates.vue");
 
 const routes = [
     {
@@ -80,6 +86,10 @@ const routes = [
                                 component: Security,
                             },
                             {
+                                path: "sessions",
+                                component: Sessions,
+                            },
+                            {
                                 path: "globalEnv",
                                 component: GlobalEnv,
                             },
@@ -88,6 +98,22 @@ const routes = [
                                 component: About,
                             },
                         ]
+                    },
+                    {
+                        path: "/audit-log",
+                        component: AuditLog,
+                    },
+                    {
+                        path: "/networks",
+                        component: Networks,
+                    },
+                    {
+                        path: "/images",
+                        component: Images,
+                    },
+                    {
+                        path: "/templates",
+                        component: Templates,
                     },
                 ]
             },

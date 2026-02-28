@@ -3,14 +3,27 @@ import { DockgeServer } from "../dockge-server";
 import { callbackError, callbackResult, checkLogin, DockgeSocket, ValidationError } from "../util-server";
 import { Stack } from "../stack";
 import { AgentSocket } from "../../common/agent-socket";
+import { apiRateLimiter, KumaRateLimiterCallback } from "../rate-limiter";
+import childProcessAsync from "promisify-child-process";
+import { AuditLog } from "../audit-log";
+import { R } from "redbean-node";
 
 export class DockerSocketHandler extends AgentSocketHandler {
     create(socket : DockgeSocket, server : DockgeServer, agentSocket : AgentSocket) {
         // Do not call super.create()
 
+        const audit = async (action: string, resourceType: string, resourceName: string) => {
+            const clientIP = await server.getClientIP(socket);
+            const user = socket.userID ? await R.findOne("user", " id = ? ", [socket.userID]) : null;
+            const username = user ? user.username : "unknown";
+            await AuditLog.log(socket.userID || 0, username, action, resourceType, resourceName, clientIP);
+        };
+
         agentSocket.on("deployStack", async (name : unknown, composeYAML : unknown, composeENV : unknown, isAdd : unknown, callback) => {
             try {
                 checkLogin(socket);
+                const clientIP = await server.getClientIP(socket);
+                if (!await apiRateLimiter.pass(clientIP, callback as KumaRateLimiterCallback)) { return; }
                 const stack = await this.saveStack(server, name, composeYAML, composeENV, isAdd);
                 await stack.deploy(socket);
                 server.sendStackList();
@@ -20,6 +33,7 @@ export class DockerSocketHandler extends AgentSocketHandler {
                     msgi18n: true,
                 }, callback);
                 stack.joinCombinedTerminal(socket);
+                await audit("stack.deploy", "stack", String(name));
             } catch (e) {
                 callbackError(e, callback);
             }
@@ -35,6 +49,7 @@ export class DockerSocketHandler extends AgentSocketHandler {
                     msgi18n: true,
                 }, callback);
                 server.sendStackList();
+                await audit("stack.save", "stack", String(name));
             } catch (e) {
                 callbackError(e, callback);
             }
@@ -43,6 +58,8 @@ export class DockerSocketHandler extends AgentSocketHandler {
         agentSocket.on("deleteStack", async (name : unknown, callback) => {
             try {
                 checkLogin(socket);
+                const clientIP = await server.getClientIP(socket);
+                if (!await apiRateLimiter.pass(clientIP, callback as KumaRateLimiterCallback)) { return; }
                 if (typeof(name) !== "string") {
                     throw new ValidationError("Name must be a string");
                 }
@@ -61,6 +78,7 @@ export class DockerSocketHandler extends AgentSocketHandler {
                     msg: "Deleted",
                     msgi18n: true,
                 }, callback);
+                await audit("stack.delete", "stack", name);
 
             } catch (e) {
                 callbackError(e, callback);
@@ -109,6 +127,8 @@ export class DockerSocketHandler extends AgentSocketHandler {
         agentSocket.on("startStack", async (stackName : unknown, callback) => {
             try {
                 checkLogin(socket);
+                const clientIP = await server.getClientIP(socket);
+                if (!await apiRateLimiter.pass(clientIP, callback as KumaRateLimiterCallback)) { return; }
 
                 if (typeof(stackName) !== "string") {
                     throw new ValidationError("Stack name must be a string");
@@ -124,6 +144,7 @@ export class DockerSocketHandler extends AgentSocketHandler {
                 server.sendStackList();
 
                 stack.joinCombinedTerminal(socket);
+                await audit("stack.start", "stack", stackName);
 
             } catch (e) {
                 callbackError(e, callback);
@@ -134,6 +155,8 @@ export class DockerSocketHandler extends AgentSocketHandler {
         agentSocket.on("stopStack", async (stackName : unknown, callback) => {
             try {
                 checkLogin(socket);
+                const clientIP = await server.getClientIP(socket);
+                if (!await apiRateLimiter.pass(clientIP, callback as KumaRateLimiterCallback)) { return; }
 
                 if (typeof(stackName) !== "string") {
                     throw new ValidationError("Stack name must be a string");
@@ -147,6 +170,7 @@ export class DockerSocketHandler extends AgentSocketHandler {
                     msgi18n: true,
                 }, callback);
                 server.sendStackList();
+                await audit("stack.stop", "stack", stackName);
             } catch (e) {
                 callbackError(e, callback);
             }
@@ -156,6 +180,8 @@ export class DockerSocketHandler extends AgentSocketHandler {
         agentSocket.on("restartStack", async (stackName : unknown, callback) => {
             try {
                 checkLogin(socket);
+                const clientIP = await server.getClientIP(socket);
+                if (!await apiRateLimiter.pass(clientIP, callback as KumaRateLimiterCallback)) { return; }
 
                 if (typeof(stackName) !== "string") {
                     throw new ValidationError("Stack name must be a string");
@@ -169,6 +195,7 @@ export class DockerSocketHandler extends AgentSocketHandler {
                     msgi18n: true,
                 }, callback);
                 server.sendStackList();
+                await audit("stack.restart", "stack", stackName);
             } catch (e) {
                 callbackError(e, callback);
             }
@@ -178,6 +205,8 @@ export class DockerSocketHandler extends AgentSocketHandler {
         agentSocket.on("updateStack", async (stackName : unknown, callback) => {
             try {
                 checkLogin(socket);
+                const clientIP = await server.getClientIP(socket);
+                if (!await apiRateLimiter.pass(clientIP, callback as KumaRateLimiterCallback)) { return; }
 
                 if (typeof(stackName) !== "string") {
                     throw new ValidationError("Stack name must be a string");
@@ -191,6 +220,7 @@ export class DockerSocketHandler extends AgentSocketHandler {
                     msgi18n: true,
                 }, callback);
                 server.sendStackList();
+                await audit("stack.update", "stack", stackName);
             } catch (e) {
                 callbackError(e, callback);
             }
@@ -200,6 +230,8 @@ export class DockerSocketHandler extends AgentSocketHandler {
         agentSocket.on("downStack", async (stackName : unknown, callback) => {
             try {
                 checkLogin(socket);
+                const clientIP = await server.getClientIP(socket);
+                if (!await apiRateLimiter.pass(clientIP, callback as KumaRateLimiterCallback)) { return; }
 
                 if (typeof(stackName) !== "string") {
                     throw new ValidationError("Stack name must be a string");
@@ -213,6 +245,7 @@ export class DockerSocketHandler extends AgentSocketHandler {
                     msgi18n: true,
                 }, callback);
                 server.sendStackList();
+                await audit("stack.down", "stack", stackName);
             } catch (e) {
                 callbackError(e, callback);
             }
@@ -262,10 +295,192 @@ export class DockerSocketHandler extends AgentSocketHandler {
         agentSocket.on("getDockerNetworkList", async (callback) => {
             try {
                 checkLogin(socket);
-                const dockerNetworkList = await server.getDockerNetworkList();
+                const res = await childProcessAsync.spawn("docker", [
+                    "network", "ls", "--format", "{{json .}}"
+                ], { encoding: "utf-8" });
+
+                const networks: object[] = [];
+                if (res.stdout) {
+                    for (const line of res.stdout.toString().split("\n")) {
+                        if (line.trim()) {
+                            const raw = JSON.parse(line);
+                            // Normalize field names across Docker and Podman
+                            networks.push({
+                                name: raw.Name || raw.name || "",
+                                id: raw.ID || raw.Id || raw.id || "",
+                                driver: raw.Driver || raw.driver || "",
+                                scope: raw.Scope || raw.scope || "local",
+                            });
+                        }
+                    }
+                }
+                networks.sort((a: any, b: any) => a.name.localeCompare(b.name));
                 callbackResult({
                     ok: true,
-                    dockerNetworkList,
+                    networks,
+                }, callback);
+            } catch (e) {
+                callbackError(e, callback);
+            }
+        });
+
+        // Inspect a docker network
+        agentSocket.on("inspectDockerNetwork", async (name: unknown, callback) => {
+            try {
+                checkLogin(socket);
+                if (typeof name !== "string") {
+                    throw new ValidationError("Network name must be a string");
+                }
+                const details = await server.getDockerNetworkDetails(name);
+                callbackResult({
+                    ok: true,
+                    details,
+                }, callback);
+            } catch (e) {
+                callbackError(e, callback);
+            }
+        });
+
+        // Create a docker network
+        agentSocket.on("createDockerNetwork", async (data: unknown, callback) => {
+            try {
+                checkLogin(socket);
+                if (typeof data !== "object" || data === null) {
+                    throw new ValidationError("Data must be an object");
+                }
+                const d = data as Record<string, unknown>;
+                if (typeof d.name !== "string" || !d.name) {
+                    throw new ValidationError("Network name is required");
+                }
+                const driver = typeof d.driver === "string" ? d.driver : undefined;
+                const subnet = typeof d.subnet === "string" ? d.subnet : undefined;
+                await server.createDockerNetwork(d.name, driver, subnet);
+                callbackResult({
+                    ok: true,
+                    msg: "networkCreated",
+                    msgi18n: true,
+                }, callback);
+                await audit("network.create", "network", d.name);
+            } catch (e) {
+                callbackError(e, callback);
+            }
+        });
+
+        // Remove a docker network
+        agentSocket.on("removeDockerNetwork", async (name: unknown, callback) => {
+            try {
+                checkLogin(socket);
+                if (typeof name !== "string") {
+                    throw new ValidationError("Network name must be a string");
+                }
+                await server.removeDockerNetwork(name);
+                callbackResult({
+                    ok: true,
+                    msg: "networkRemoved",
+                    msgi18n: true,
+                }, callback);
+                await audit("network.remove", "network", name);
+            } catch (e) {
+                callbackError(e, callback);
+            }
+        });
+
+        // List docker images
+        agentSocket.on("listDockerImages", async (callback) => {
+            try {
+                checkLogin(socket);
+                const res = await childProcessAsync.spawn("docker", [
+                    "image", "ls", "--format", "{{json .}}"
+                ], { encoding: "utf-8" });
+
+                const images: object[] = [];
+                if (res.stdout) {
+                    for (const line of res.stdout.toString().split("\n")) {
+                        if (line.trim()) {
+                            const raw = JSON.parse(line);
+                            // Normalize field names across Docker and Podman
+                            images.push({
+                                id: raw.ID || raw.Id || raw.id || "",
+                                repository: raw.Repository || raw.repository || "",
+                                tag: raw.Tag || raw.tag || "",
+                                size: DockerSocketHandler.formatBytes(raw.Size, raw.VirtualSize),
+                                createdAt: DockerSocketHandler.formatCreated(raw.CreatedSince, raw.Created, raw.CreatedAt),
+                            });
+                        }
+                    }
+                }
+                callbackResult({ ok: true, images }, callback);
+            } catch (e) {
+                callbackError(e, callback);
+            }
+        });
+
+        // Remove a docker image
+        agentSocket.on("removeDockerImage", async (imageId: unknown, callback) => {
+            try {
+                checkLogin(socket);
+                const clientIP = await server.getClientIP(socket);
+                if (!await apiRateLimiter.pass(clientIP, callback as KumaRateLimiterCallback)) { return; }
+
+                if (typeof imageId !== "string") {
+                    throw new ValidationError("Image ID must be a string");
+                }
+                // Validate image ID format (sha256 hash or repo:tag)
+                if (!imageId.match(/^[a-zA-Z0-9/:._-]+$/)) {
+                    throw new ValidationError("Invalid image ID format");
+                }
+                await childProcessAsync.spawn("docker", ["image", "rm", imageId], {
+                    encoding: "utf-8",
+                });
+                callbackResult({
+                    ok: true,
+                    msg: "imageRemoved",
+                    msgi18n: true,
+                }, callback);
+                await audit("image.remove", "image", imageId);
+            } catch (e) {
+                callbackError(e, callback);
+            }
+        });
+
+        // Prune unused images
+        agentSocket.on("pruneDockerImages", async (callback) => {
+            try {
+                checkLogin(socket);
+                const clientIP = await server.getClientIP(socket);
+                if (!await apiRateLimiter.pass(clientIP, callback as KumaRateLimiterCallback)) { return; }
+
+                await childProcessAsync.spawn("docker", ["image", "prune", "-a", "--force"], {
+                    encoding: "utf-8",
+                });
+                callbackResult({
+                    ok: true,
+                    msg: "imagesPruned",
+                    msgi18n: true,
+                }, callback);
+                await audit("image.prune", "image", "all");
+            } catch (e) {
+                callbackError(e, callback);
+            }
+        });
+
+        // Inspect a docker image
+        agentSocket.on("inspectDockerImage", async (imageId: unknown, callback) => {
+            try {
+                checkLogin(socket);
+                if (typeof imageId !== "string") {
+                    throw new ValidationError("Image ID must be a string");
+                }
+                const res = await childProcessAsync.spawn("docker", ["image", "inspect", imageId], {
+                    encoding: "utf-8",
+                });
+                if (!res.stdout) {
+                    throw new Error("Failed to inspect image");
+                }
+                const details = JSON.parse(res.stdout.toString());
+                callbackResult({
+                    ok: true,
+                    details: Array.isArray(details) ? details[0] : details,
                 }, callback);
             } catch (e) {
                 callbackError(e, callback);
@@ -291,6 +506,60 @@ export class DockerSocketHandler extends AgentSocketHandler {
         const stack = new Stack(server, name, composeYAML, composeENV, false);
         await stack.save(isAdd);
         return stack;
+    }
+
+    /**
+     * Format bytes to human-readable size string.
+     * Handles both Docker (pre-formatted string) and Podman (raw number) output.
+     */
+    static formatBytes(size: unknown, virtualSize?: unknown): string {
+        const raw = size ?? virtualSize;
+        if (typeof raw === "string") {
+            return raw;
+        }
+        if (typeof raw === "number") {
+            if (raw < 1024) {
+                return raw + "B";
+            } else if (raw < 1024 * 1024) {
+                return (raw / 1024).toFixed(1) + "KB";
+            } else if (raw < 1024 * 1024 * 1024) {
+                return (raw / (1024 * 1024)).toFixed(1) + "MB";
+            } else {
+                return (raw / (1024 * 1024 * 1024)).toFixed(2) + "GB";
+            }
+        }
+        return "";
+    }
+
+    /**
+     * Format created time to human-readable string.
+     * Handles Docker (CreatedSince string) and Podman (unix timestamp or date string).
+     */
+    static formatCreated(createdSince?: unknown, created?: unknown, createdAt?: unknown): string {
+        if (typeof createdSince === "string" && createdSince) {
+            return createdSince;
+        }
+        if (typeof created === "number" && created > 0) {
+            const diff = Date.now() - created * 1000;
+            const minutes = Math.floor(diff / 60000);
+            if (minutes < 60) {
+                return minutes + " minutes ago";
+            }
+            const hours = Math.floor(minutes / 60);
+            if (hours < 24) {
+                return hours + " hours ago";
+            }
+            const days = Math.floor(hours / 24);
+            if (days < 30) {
+                return days + " days ago";
+            }
+            const months = Math.floor(days / 30);
+            return months + " months ago";
+        }
+        if (typeof createdAt === "string" && createdAt) {
+            return createdAt;
+        }
+        return "";
     }
 
 }

@@ -5,6 +5,7 @@ import jwt from "jsonwebtoken";
 import { JWTDecoded, ValidationError } from "../util-server";
 import { R } from "redbean-node";
 import { User } from "../models/user";
+import { shake256, SHAKE256_LENGTH } from "../password-hash";
 import { Settings } from "../settings";
 import { Stack } from "../stack";
 import { promises as fsAsync } from "node:fs";
@@ -53,6 +54,11 @@ export class MainRouter extends Router {
 
         if (!user) {
             throw new ValidationError("You are not logged in.");
+        }
+
+        // Verify the password hasn't changed since token was issued
+        if (decoded.h && decoded.h !== shake256(user.password, SHAKE256_LENGTH)) {
+            throw new ValidationError("Token invalidated by password change.");
         }
     }
 
@@ -153,6 +159,81 @@ export class MainRouter extends Router {
                     response.status(500).json({
                         ok: false,
                         msg: "Failed to backup stack",
+                    });
+                }
+            }
+        });
+
+        router.options("/api/stacks/:stackName/logs", (request, response) => {
+            this.setApiCorsHeaders(request, response);
+            response.status(204).end();
+        });
+
+        router.get("/api/stacks/:stackName/logs", apiAuth, async (request, response) => {
+            try {
+                this.setApiCorsHeaders(request, response);
+
+                const stackName = request.params.stackName;
+
+                if (typeof stackName !== "string" || !stackName.match(/^[a-z0-9_-]+$/)) {
+                    throw new ValidationError("Invalid stack name");
+                }
+
+                const stack = await Stack.getStack(server, stackName);
+
+                if (!stack.isManagedByDockge) {
+                    throw new ValidationError("Stack not managed by Dockge");
+                }
+
+                const service = typeof request.query.service === "string" ? request.query.service : undefined;
+                let lines = 1000;
+                if (typeof request.query.lines === "string") {
+                    const parsed = parseInt(request.query.lines);
+                    if (!isNaN(parsed) && parsed > 0 && parsed <= 10000) {
+                        lines = parsed;
+                    }
+                }
+
+                const args = [
+                    "compose",
+                    "-f", path.join(server.stacksDir, stackName, "compose.yaml"),
+                    "logs",
+                    "--no-color",
+                    "--tail", String(lines),
+                ];
+
+                if (service) {
+                    if (!service.match(/^[a-zA-Z0-9_-]+$/)) {
+                        throw new ValidationError("Invalid service name");
+                    }
+                    args.push(service);
+                }
+
+                const result = await childProcessAsync.spawn("docker", args, {
+                    encoding: "utf-8",
+                    timeout: 30000,
+                });
+
+                const logContent = (result.stdout?.toString() || "") + (result.stderr?.toString() || "");
+                const now = new Date().toISOString().replace(/[:.]/g, "-");
+                const fileName = service
+                    ? `${stackName}-${service}-logs-${now}.txt`
+                    : `${stackName}-logs-${now}.txt`;
+
+                response.setHeader("Content-Type", "text/plain");
+                response.setHeader("Content-Disposition", `attachment; filename="${fileName}"`);
+                response.setHeader("Cache-Control", "no-store");
+                response.send(logContent);
+            } catch (error) {
+                if (error instanceof ValidationError) {
+                    response.status(400).json({
+                        ok: false,
+                        msg: error.message,
+                    });
+                } else {
+                    response.status(500).json({
+                        ok: false,
+                        msg: "Failed to export logs",
                     });
                 }
             }

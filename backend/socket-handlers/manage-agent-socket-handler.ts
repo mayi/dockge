@@ -1,7 +1,7 @@
 import { SocketHandler } from "../socket-handler.js";
 import { DockgeServer } from "../dockge-server";
 import { log } from "../log";
-import { callbackError, callbackResult, checkLogin, DockgeSocket } from "../util-server";
+import { callbackError, callbackResult, checkLogin, DockgeSocket, ValidationError } from "../util-server";
 import { LooseObject } from "../../common/util-common";
 
 export class ManageAgentSocketHandler extends SocketHandler {
@@ -18,6 +18,26 @@ export class ManageAgentSocketHandler extends SocketHandler {
                 }
 
                 let data = requestData as LooseObject;
+
+                // Validate agent URL
+                if (typeof data.url !== "string" || !data.url) {
+                    throw new ValidationError("Agent URL is required");
+                }
+                try {
+                    const parsed = new URL(data.url);
+                    if (parsed.protocol !== "http:" && parsed.protocol !== "https:") {
+                        throw new ValidationError("Agent URL must use http or https protocol");
+                    }
+                    if (parsed.username || parsed.password) {
+                        throw new ValidationError("Agent URL must not contain credentials");
+                    }
+                } catch (e) {
+                    if (e instanceof ValidationError) {
+                        throw e;
+                    }
+                    throw new ValidationError("Agent URL is not a valid URL");
+                }
+
                 let manager = socket.instanceManager;
                 await manager.test(data.url, data.username, data.password);
                 await manager.add(data.url, data.username, data.password);

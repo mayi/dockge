@@ -4,22 +4,24 @@ import { SocketHandler } from "../socket-handler.js";
 import { DockgeServer } from "../dockge-server";
 import { log } from "../log";
 import { R } from "redbean-node";
-import { loginRateLimiter, twoFaRateLimiter } from "../rate-limiter";
+import { loginRateLimiter, twoFaRateLimiter, apiRateLimiter } from "../rate-limiter";
 import { generatePasswordHash, needRehashPassword, shake256, SHAKE256_LENGTH, verifyPassword } from "../password-hash";
 import { User } from "../models/user";
 import {
     callbackError,
+    callbackResult,
     checkLogin,
     DockgeSocket,
     doubleCheckPassword,
     JWTDecoded,
-    ValidationError
+    ValidationError,
+    validatePasswordStrength
 } from "../util-server";
-import { passwordStrength } from "check-password-strength";
 import jwt from "jsonwebtoken";
 import { Settings } from "../settings";
 import fs, { promises as fsAsync } from "fs";
 import path from "path";
+import { AuditLog } from "../audit-log";
 
 export class MainSocketHandler extends SocketHandler {
     create(socket : DockgeSocket, server : DockgeServer) {
@@ -31,9 +33,15 @@ export class MainSocketHandler extends SocketHandler {
         // Setup
         socket.on("setup", async (username, password, callback) => {
             try {
-                if (passwordStrength(password).value === "Too weak") {
-                    throw new Error("Password is too weak. It should contain alphabetic and numeric characters. It must be at least 6 characters in length.");
+                const clientIP = await server.getClientIP(socket);
+
+                // Rate limit setup attempts
+                if (!await loginRateLimiter.pass(clientIP, callback)) {
+                    log.info("auth", `Too many setup requests. IP=${clientIP}`);
+                    return;
                 }
+
+                validatePasswordStrength(password);
 
                 if ((await R.knex("user").count("id as count").first()).count !== 0) {
                     throw new Error("Dockge has been initialized. If you want to run setup again, please delete the database.");
@@ -68,6 +76,12 @@ export class MainSocketHandler extends SocketHandler {
 
             log.info("auth", `Login by token. IP=${clientIP}`);
 
+            // Rate limit token login attempts
+            if (!await loginRateLimiter.pass(clientIP, callback)) {
+                log.info("auth", `Too many loginByToken requests. IP=${clientIP}`);
+                return;
+            }
+
             try {
                 const decoded = jwt.verify(token, server.jwtSecret) as JWTDecoded;
 
@@ -82,6 +96,19 @@ export class MainSocketHandler extends SocketHandler {
                     if (decoded.h !== shake256(user.password, SHAKE256_LENGTH)) {
                         throw new Error("The token is invalid due to password change or old token");
                     }
+
+                    // Check if the session is still valid
+                    const tokenHash = User.hashToken(token);
+                    const session = await R.findOne("session", " token_hash = ? AND is_valid = 1 ", [tokenHash]);
+                    if (!session) {
+                        throw new Error("Session has been revoked");
+                    }
+
+                    // Update last active time
+                    await R.exec("UPDATE `session` SET last_active_at = datetime('now') WHERE token_hash = ?", [tokenHash]);
+
+                    // Store token hash on socket for session identification
+                    (socket as any)._tokenHash = tokenHash;
 
                     log.debug("auth", "afterLogin");
                     await server.afterLogin(socket, user);
@@ -142,6 +169,7 @@ export class MainSocketHandler extends SocketHandler {
             }
 
             const user = await this.login(data.username, data.password);
+            const userAgent = socket.request?.headers?.["user-agent"] || "";
 
             if (user) {
                 if (user.twofa_status === 0) {
@@ -149,10 +177,12 @@ export class MainSocketHandler extends SocketHandler {
 
                     log.info("auth", `Successfully logged in user ${data.username}. IP=${clientIP}`);
 
+                    const token = await User.createJWTWithSession(user, server.jwtSecret, clientIP, userAgent);
                     callback({
                         ok: true,
-                        token: User.createJWT(user, server.jwtSecret),
+                        token,
                     });
+                    await AuditLog.log(user.id, data.username, "auth.login", "user", data.username, clientIP);
                 }
 
                 if (user.twofa_status === 1 && !data.token) {
@@ -178,9 +208,10 @@ export class MainSocketHandler extends SocketHandler {
 
                         log.info("auth", `Successfully logged in user ${data.username}. IP=${clientIP}`);
 
+                        const token = await User.createJWTWithSession(user, server.jwtSecret, clientIP, userAgent);
                         callback({
                             ok: true,
-                            token: User.createJWT(user, server.jwtSecret),
+                            token,
                         });
                     } else {
 
@@ -202,6 +233,7 @@ export class MainSocketHandler extends SocketHandler {
                     msg: "authIncorrectCreds",
                     msgi18n: true,
                 });
+                await AuditLog.log(0, data.username || "unknown", "auth.login_failed", "user", data.username || "", clientIP);
             }
 
         });
@@ -215,12 +247,13 @@ export class MainSocketHandler extends SocketHandler {
                     throw new Error("Invalid new password");
                 }
 
-                if (passwordStrength(password.newPassword).value === "Too weak") {
-                    throw new Error("Password is too weak. It should contain alphabetic and numeric characters. It must be at least 6 characters in length.");
-                }
+                validatePasswordStrength(password.newPassword);
 
                 let user = await doubleCheckPassword(socket, password.currentPassword);
                 await user.resetPassword(password.newPassword);
+
+                // Invalidate all other sessions
+                await R.exec("UPDATE `session` SET is_valid = 0 WHERE user_id = ?", [user.id]);
 
                 server.disconnectAllSocketClients(user.id, socket.id);
 
@@ -229,6 +262,9 @@ export class MainSocketHandler extends SocketHandler {
                     msg: "Password has been updated successfully.",
                 });
 
+                const clientIP = await server.getClientIP(socket);
+                await AuditLog.log(user.id, user.username, "auth.password_change", "user", user.username, clientIP);
+
             } catch (e) {
                 if (e instanceof Error) {
                     callback({
@@ -236,6 +272,101 @@ export class MainSocketHandler extends SocketHandler {
                         msg: e.message,
                     });
                 }
+            }
+        });
+
+        // Get active sessions for current user
+        socket.on("getActiveSessions", async (callback) => {
+            try {
+                checkLogin(socket);
+
+                const sessions = await R.getAll(
+                    "SELECT id, ip_address, user_agent, created_at, last_active_at FROM `session` WHERE user_id = ? AND is_valid = 1 ORDER BY last_active_at DESC",
+                    [socket.userID]
+                );
+
+                const currentTokenHash = (socket as any)._tokenHash || "";
+
+                const mapped = sessions.map((s: any) => ({
+                    id: s.id,
+                    ipAddress: s.ip_address,
+                    userAgent: s.user_agent,
+                    createdAt: s.created_at,
+                    lastActiveAt: s.last_active_at,
+                    isCurrent: s.id === (currentTokenHash ? undefined : undefined), // Will be set below
+                }));
+
+                // Find current session by token hash
+                if (currentTokenHash) {
+                    const currentSession = await R.findOne("session", " token_hash = ? ", [currentTokenHash]);
+                    if (currentSession) {
+                        for (const s of mapped) {
+                            s.isCurrent = (s.id === currentSession.id);
+                        }
+                    }
+                }
+
+                callbackResult({
+                    ok: true,
+                    sessions: mapped,
+                }, callback);
+            } catch (e) {
+                callbackError(e, callback);
+            }
+        });
+
+        // Revoke a specific session
+        socket.on("revokeSession", async (sessionId: unknown, callback) => {
+            try {
+                checkLogin(socket);
+
+                if (typeof sessionId !== "number") {
+                    throw new ValidationError("Session ID must be a number");
+                }
+
+                await R.exec(
+                    "UPDATE `session` SET is_valid = 0 WHERE id = ? AND user_id = ?",
+                    [sessionId, socket.userID]
+                );
+
+                callbackResult({
+                    ok: true,
+                    msg: "sessionRevoked",
+                    msgi18n: true,
+                }, callback);
+            } catch (e) {
+                callbackError(e, callback);
+            }
+        });
+
+        // Revoke all other sessions
+        socket.on("revokeAllOtherSessions", async (callback) => {
+            try {
+                checkLogin(socket);
+
+                const currentTokenHash = (socket as any)._tokenHash || "";
+
+                if (currentTokenHash) {
+                    await R.exec(
+                        "UPDATE `session` SET is_valid = 0 WHERE user_id = ? AND token_hash != ?",
+                        [socket.userID, currentTokenHash]
+                    );
+                } else {
+                    await R.exec(
+                        "UPDATE `session` SET is_valid = 0 WHERE user_id = ?",
+                        [socket.userID]
+                    );
+                }
+
+                server.disconnectAllSocketClients(socket.userID, socket.id);
+
+                callbackResult({
+                    ok: true,
+                    msg: "allOtherSessionsRevoked",
+                    msgi18n: true,
+                }, callback);
+            } catch (e) {
+                callbackError(e, callback);
             }
         });
 
@@ -297,6 +428,10 @@ export class MainSocketHandler extends SocketHandler {
                 });
 
                 server.sendInfo(socket);
+
+                const settingsIP = await server.getClientIP(socket);
+                const settingsUser = await R.findOne("user", " id = ? ", [socket.userID]);
+                await AuditLog.log(socket.userID, settingsUser?.username || "unknown", "settings.change", "settings", "general", settingsIP);
 
             } catch (e) {
                 if (e instanceof Error) {

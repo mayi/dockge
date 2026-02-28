@@ -7,6 +7,7 @@ import { R } from "redbean-node";
 import { verifyPassword } from "./password-hash";
 import fs from "fs";
 import { AgentManager } from "./agent-manager";
+import { passwordStrength } from "check-password-strength";
 
 export interface JWTDecoded {
     username : string;
@@ -103,4 +104,17 @@ export function fileExists(file : string) {
     return fs.promises.access(file, fs.constants.F_OK)
         .then(() => true)
         .catch(() => false);
+}
+
+/**
+ * Validate password strength. Throws ValidationError if too weak.
+ */
+export function validatePasswordStrength(password : string) {
+    if (typeof password !== "string" || password.length < 8) {
+        throw new ValidationError("Password must be at least 8 characters long.");
+    }
+    const strength = passwordStrength(password);
+    if (strength.value === "Too weak" || strength.value === "Weak") {
+        throw new ValidationError("Password is too weak. Use at least 8 characters with a mix of uppercase, lowercase, numbers, and symbols.");
+    }
 }

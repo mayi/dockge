@@ -66,14 +66,14 @@
                             <a v-else :href="agent.url" target="_blank">{{ endpoint }}</a>
 
                             <!-- Remove Button -->
-                            <font-awesome-icon v-if="endpoint !== ''" class="ms-2 remove-agent" icon="trash" @click="showRemoveAgentDialog[agent.url] = !showRemoveAgentDialog[agent.url]" />
-
-                            <!-- Remoe Agent Dialog -->
-                            <BModal v-model="showRemoveAgentDialog[agent.url]" :okTitle="$t('removeAgent')" okVariant="danger" @ok="removeAgent(agent.url)">
-                                <p>{{ agent.url }}</p>
-                                {{ $t("removeAgentMsg") }}
-                            </BModal>
+                            <font-awesome-icon v-if="endpoint !== ''" class="ms-2 remove-agent" icon="trash" @click="confirmRemoveAgent(agent.url)" />
                         </div>
+
+                        <!-- Remove Agent Dialog -->
+                        <Confirm ref="confirmRemoveAgentDialog" btnStyle="btn-danger" :yesText="$t('removeAgent')" :noText="$t('cancel')" @yes="doRemoveAgent">
+                            <p>{{ removeAgentUrl }}</p>
+                            {{ $t("removeAgentMsg") }}
+                        </Confirm>
 
                         <button v-if="!showAgentForm" class="btn btn-normal" @click="showAgentForm = !showAgentForm">{{ $t("addAgent") }}</button>
 
@@ -109,10 +109,11 @@
 
 <script>
 import { statusNameShort } from "../../../common/util-common";
+import Confirm from "../components/Confirm.vue";
 
 export default {
     components: {
-
+        Confirm,
     },
     props: {
         calculatedHeight: {
@@ -133,7 +134,7 @@ export default {
             displayedRecords: [],
             dockerRunCommand: "",
             showAgentForm: false,
-            showRemoveAgentDialog: {},
+            removeAgentUrl: "",
             connectingAgent: false,
             agent: {
                 url: "http://",
@@ -210,6 +211,15 @@ export default {
                     delete this.$root.allAgentStackList[endpoint];
                 }
             });
+        },
+
+        confirmRemoveAgent(url) {
+            this.removeAgentUrl = url;
+            this.$refs.confirmRemoveAgentDialog.show();
+        },
+
+        doRemoveAgent() {
+            this.removeAgent(this.removeAgentUrl);
         },
 
         getStatusNum(statusName) {

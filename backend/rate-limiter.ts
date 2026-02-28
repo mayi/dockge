@@ -118,7 +118,7 @@ export const loginRateLimiter = new PerIPRateLimiter({
     errorMessage: "Too frequently, try again later."
 });
 
-export const apiRateLimiter = new KumaRateLimiter({
+export const apiRateLimiter = new PerIPRateLimiter({
     tokensPerInterval: 60,
     interval: "minute",
     fireImmediately: true,

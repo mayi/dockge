@@ -1,6 +1,7 @@
 import jwt from "jsonwebtoken";
 import { R } from "redbean-node";
 import { BeanModel } from "redbean-node/dist/bean-model";
+import { createHash } from "crypto";
 import { generatePasswordHash, shake256, SHAKE256_LENGTH } from "../password-hash";
 
 export class User extends BeanModel {
@@ -41,6 +42,31 @@ export class User extends BeanModel {
         }, jwtSecret, {
             expiresIn: "30d",
         });
+    }
+
+    /**
+     * Create a JWT and record a session in the database
+     */
+    static async createJWTWithSession(user : User, jwtSecret : string, ipAddress : string, userAgent : string) : Promise<string> {
+        const token = User.createJWT(user, jwtSecret);
+        const tokenHash = createHash("sha256").update(token).digest("hex");
+
+        const session = R.dispense("session");
+        session.user_id = user.id;
+        session.token_hash = tokenHash;
+        session.ip_address = ipAddress || "";
+        session.user_agent = (userAgent || "").substring(0, 512);
+        session.is_valid = true;
+        await R.store(session);
+
+        return token;
+    }
+
+    /**
+     * Hash a token for session lookup
+     */
+    static hashToken(token : string) : string {
+        return createHash("sha256").update(token).digest("hex");
     }
 
 }
